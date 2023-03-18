@@ -1,0 +1,49 @@
+# MakeFile For Stone Programming Languages
+
+# Project Name
+PROJECT_NAME = desafio_stone
+
+# Compilation Options
+CC = gcc
+CC_FLAGS =  -c \
+	-I $(INCLUDE) \
+	-Wall \
+	-pedantic \
+	-o
+
+# Folders
+SRC = ./src
+APP = ./app
+OBJ = ./obj
+INCLUDE = ./include
+
+# Files
+MAIN = ${APP}/main.c
+MAIN_OBJ = ${OBJ}/main.o
+C_HEADERS = $(wildcard ${INCLUDE}/*.h)
+C_SOURCE = $(wildcard ${SRC}/*.c)
+OBJ_SOURCE = $(subst .c,.o,$(subst $(SRC),$(OBJ), $(C_SOURCE)))
+
+all: $(PROJECT_NAME)
+
+$(PROJECT_NAME): $(OBJ_SOURCE) $(MAIN_OBJ)
+	@ echo 'Compiling Executable File'
+	@ $(CC) $^ -o $@
+	@ echo 'Finished Building Project!'
+
+$(OBJ)/%.o: $(SRC)/%.c $(INCLUDE)/%.h
+	@ echo 'Building and Linking File: $@'
+	@ $(CC) $< $(CC_FLAGS) $@
+	@ echo ' '
+
+$(OBJ)/main.o: $(APP)/main.c
+	@ echo 'Building and Linking Main File: $@'
+	@ $(CC) $< $(CC_FLAGS) $@
+	@ echo ' '
+
+clean:
+	@ echo "Cleaning All Object Files..."
+	@ rm -f obj/*.o
+
+run:
+	@ ./${PROJECT_NAME}
