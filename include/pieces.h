@@ -2,16 +2,16 @@
 #define PIECES_H_FILE
 
 enum PieceType {
-	CORNER_PIECE = 3,
-	WALL_PIECE = 5,
-	NORMAL_PIECE = 8,
-	START = 1,
-	FINISH = 2
+	CORNER = 3,
+	WALL = 5,
+	NORMAL = 8,
 };
 
 enum PieceState {
 	DEAD,
-	ALIVE
+	ALIVE,
+	START,
+	FINISH
 };
 
 typedef struct piece {
@@ -33,5 +33,6 @@ typedef struct board {
 void printBoard(Board*);
 void debugBoard(Board*);
 Board* createBoard(int, int);
+Board* createCustomBoard(int**,int,int);
 
 #endif

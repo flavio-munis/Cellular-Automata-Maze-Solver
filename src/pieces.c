@@ -5,12 +5,36 @@
 // Prints the current board to the screen
 void printBoard(Board* currentBoard) {
 
+	Piece** boardPieces = currentBoard -> pieces;
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	
 	for(int i = 0; i < currentBoard -> sizeRow; i++) {
 		for(int j = 0; j < currentBoard -> sizeCol; j++) {
-			if(currentBoard -> pieces[i][j].state == DEAD)
-				printf("◻");
-			else
-			printf("▧");
+
+			if(playerPositionY == i && playerPositionX == j) {
+				printf("⬞ ");
+				continue;
+			}
+			
+			switch(boardPieces[i][j].state) {
+
+				case DEAD:
+					printf("◻ ");
+					break;
+
+				case ALIVE:
+					printf("▨ ");
+					break;
+
+				case START:
+					printf("▣ ");
+					break;
+
+				case FINISH:
+					printf("▣ ");
+					break;
+			}
 		}
 		puts("");
 	}
@@ -31,6 +55,22 @@ Piece* createPiece(enum PieceType type, enum PieceState state) {
 // Find the type of the current piece in the board
 enum PieceType findType(int i, int j, int sizeRowAcess, int sizeColAcess) {
 
+	// Verifies which type of piece it's based on the current position in the board
+	if(i == 0 || i == sizeRowAcess) {
+		if(j == 0 || j == sizeColAcess)
+			return CORNER;
+		else
+			return WALL;
+	}
+
+	if(j == 0 || j == sizeColAcess)
+		return WALL;
+	else
+		return NORMAL;
+}
+
+enum PieceState findState(int i, int j, int sizeRowAcess, int sizeColAcess) {
+
 	// Verifies if it's the start ou finish piece
 	if(i == 0 && j == 0)
 		return START;
@@ -38,18 +78,7 @@ enum PieceType findType(int i, int j, int sizeRowAcess, int sizeColAcess) {
 	if(i == sizeRowAcess && j == sizeColAcess)
 		return FINISH;
 
-	// Verifies which type of piece it's based on the current position in the board
-	if(i == 0 || i == sizeRowAcess) {
-		if(j == 0 || j == sizeColAcess)
-			return CORNER_PIECE;
-		else
-			return WALL_PIECE;
-	}
-
-	if(j == 0 || j == sizeColAcess)
-		return WALL_PIECE;
-	else
-		return NORMAL_PIECE;
+	return DEAD;
 }
 
 // Creates a new Board with dynamic size
@@ -75,7 +104,7 @@ Board* createBoard(int sizeRow, int sizeCol) {
 
 		// Adds all pieces to the 
 		for(int j = 0; j < sizeCol; j++) {
-			newBoard -> pieces[i][j] = *createPiece(findType(i,j,sizeRow - 1,sizeCol - 1), DEAD);
+			newBoard -> pieces[i][j] = *createPiece(findType(i,j,sizeRow - 1,sizeCol - 1), findState(i,j,sizeRow - 1, sizeCol - 1));
 		}
 	}
 		   
@@ -94,32 +123,41 @@ void debugBoard(Board* currentBoard) {
 		
 		for(int j = 0; j < currentBoard -> sizeCol; j++) {
 
-			printf("%s ", (boardPieces[i][j].state == DEAD) ? "Dead" : "Alive");
+			switch(boardPieces[i][j].state) {
 
-			switch(boardPieces[i][j].type) {
-
-			    case NORMAL_PIECE:
-					printf("Normal Piece");
+				case DEAD:
+					printf("Dead");
 					break;
 
-				case WALL_PIECE:
-					printf("Wall Piece");
-					break;
-
-				case CORNER_PIECE:
-					printf("Corner Piece");
+				case ALIVE:
+					printf("Alive");
 					break;
 
 				case START:
-					printf("Start Piece");
+					printf("Start");
 					break;
 
 				case FINISH:
-					printf("Finish Piece");
+					printf("Finish");
+					break;
+			}
+
+			switch(boardPieces[i][j].type) {
+
+			    case NORMAL:
+					printf(" Normal Piece");
+					break;
+
+				case WALL:
+					printf(" Wall Piece");
+					break;
+
+				case CORNER:
+					printf(" Corner Piece");
 					break;
 
 			    default:
-					printf("Unknow Piece Type");
+					printf(" Unknow Piece Type");
 			}
 
 			if(x == j && y == i)
@@ -133,4 +171,49 @@ void debugBoard(Board* currentBoard) {
 	
 }
 
-//void createCustomBoard(int** )
+/* Creates a custom board based on the user parameters
+   
+   0 - Piece is Dead
+   1 - Piece is Alive
+   2 - Player
+   3 - START
+   4 - FINISH
+
+ */
+Board* createCustomBoard(int** boardConfig, int sizeRow, int sizeCol) {
+
+	Board* newBoard = createBoard(sizeRow, sizeCol);
+	Piece** boardPieces = newBoard -> pieces;
+	Player currentPlayer = newBoard -> player;
+	
+	for(int i = 0; i < sizeRow; i++) {
+		for(int j = 0; j < sizeCol; j++) {
+
+			switch(boardConfig[i][j]) {
+
+				case 0:
+					boardPieces[i][j].state = DEAD;
+					break;
+				
+				case 1:
+					boardPieces[i][j].state = ALIVE;
+					break;
+				
+			    case 2:
+					currentPlayer.coordinate[0] = j;
+					currentPlayer.coordinate[1] = i;
+					break;
+
+				case 3:
+					boardPieces[i][j].state = START;
+					break;
+
+				case 4:
+					boardPieces[i][j].state = FINISH;
+					break;
+			}			
+		}
+	}
+
+	return newBoard;
+}

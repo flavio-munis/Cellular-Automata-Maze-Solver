@@ -7,10 +7,20 @@
 
 int main(int argc, char* argv[]) {
 
-	Board* board = createBoard(SIZE_ROW, SIZE_COL);
+	int customConfig[7][8] = {{3,0,0,0,0,0,0,0},
+							  {0,0,0,0,1,0,0,0},
+							  {0,0,1,0,1,1,0,0},
+							  {0,1,1,0,0,1,1,0},
+							  {0,0,1,0,1,1,0,0},
+							  {0,0,0,0,1,0,0,0},
+							  {0,0,0,0,0,0,0,4}};
 	
+	Board* board = createCustomBoard(customConfig, SIZE_ROW, SIZE_COL);
+
+
 	printBoard(board);
 	debugBoard(board);
 
+	
 	return 0;
 }
