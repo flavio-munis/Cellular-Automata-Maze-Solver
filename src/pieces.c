@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pieces.h"
+#include "file_handler.h"
 
 // Prints the current board to the screen
 void printBoard(Board* currentBoard) {
@@ -13,7 +14,7 @@ void printBoard(Board* currentBoard) {
 		for(int j = 0; j < currentBoard -> sizeCol; j++) {
 
 			if(playerPositionY == i && playerPositionX == j) {
-				printf("⬞ ");
+				printf("> ");
 				continue;
 			}
 			
@@ -180,16 +181,17 @@ void debugBoard(Board* currentBoard) {
    4 - FINISH
 
  */
-Board* createCustomBoard(int** boardConfig, int sizeRow, int sizeCol) {
+Board* createCustomBoard(char* boardConfig, int sizeRow, int sizeCol) {
 
 	Board* newBoard = createBoard(sizeRow, sizeCol);
 	Piece** boardPieces = newBoard -> pieces;
-	Player currentPlayer = newBoard -> player;
+	Player* currentPlayer = &newBoard -> player;
+	int** pseudoBoard = readBoardFromFile(boardConfig, sizeRow, sizeCol);
 	
 	for(int i = 0; i < sizeRow; i++) {
 		for(int j = 0; j < sizeCol; j++) {
 
-			switch(boardConfig[i][j]) {
+			switch(pseudoBoard[i][j]) {
 
 				case 0:
 					boardPieces[i][j].state = DEAD;
@@ -200,8 +202,8 @@ Board* createCustomBoard(int** boardConfig, int sizeRow, int sizeCol) {
 					break;
 				
 			    case 2:
-					currentPlayer.coordinate[0] = j;
-					currentPlayer.coordinate[1] = i;
+					currentPlayer -> coordinate[0] = j;
+					currentPlayer -> coordinate[1] = i;
 					break;
 
 				case 3:
@@ -214,6 +216,12 @@ Board* createCustomBoard(int** boardConfig, int sizeRow, int sizeCol) {
 			}			
 		}
 	}
+
+	// Free memory from pseudoboard
+	for(int i = 0; i < sizeRow; i++)
+		free(pseudoBoard[i]);
+
+	free(pseudoBoard);
 
 	return newBoard;
 }

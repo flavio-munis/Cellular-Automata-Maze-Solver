@@ -33,6 +33,6 @@ typedef struct board {
 void printBoard(Board*);
 void debugBoard(Board*);
 Board* createBoard(int, int);
-Board* createCustomBoard(int**,int,int);
+Board* createCustomBoard(char*,int,int);
 
 #endif
