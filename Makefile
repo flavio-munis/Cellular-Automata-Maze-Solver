@@ -24,7 +24,11 @@ C_HEADERS = $(wildcard ${INCLUDE}/*.h)
 C_SOURCE = $(wildcard ${SRC}/*.c)
 OBJ_SOURCE = $(subst .c,.o,$(subst $(SRC),$(OBJ), $(C_SOURCE)))
 
-all: $(PROJECT_NAME)
+all: ${OBJ} $(PROJECT_NAME)
+
+$(OBJ):
+	@ mkdir obj
+	@ echo "Object Folder Created"
 
 $(PROJECT_NAME): $(OBJ_SOURCE) $(MAIN_OBJ)
 	@ echo 'Compiling Executable File'
@@ -43,7 +47,7 @@ $(OBJ)/main.o: $(APP)/main.c
 
 clean:
 	@ echo "Cleaning All Object Files..."
-	@ rm -f obj/*.o
+	@ rm -rf obj/
 
 run:
 	@ ./${PROJECT_NAME}
