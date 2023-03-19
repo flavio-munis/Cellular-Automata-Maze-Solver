@@ -19,20 +19,8 @@ typedef struct piece {
 	enum PieceState state;
 } Piece;
 
-typedef struct player {
-	int coordinate[2];
-} Player;
-
-typedef struct board {
-	int sizeCol;
-	int sizeRow;
-	Piece** pieces;
-	Player player;
-} Board;
-
-void printBoard(Board*);
-void debugBoard(Board*);
-Board* createBoard(int, int);
-Board* createCustomBoard(char*,int,int);
+Piece* createPiece(enum PieceType, enum PieceState);
+enum PieceType findType(int, int, int, int);
+enum PieceState findState(int, int, int, int);
 
 #endif
