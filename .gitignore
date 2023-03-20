@@ -1,11 +1,11 @@
 # Emacs Auto Save Files
-
 *~
 
 # Object Files
-
 obj/*
 
 # Binary name
-
 desafio_stone
+
+# Test Boards
+boards/test*

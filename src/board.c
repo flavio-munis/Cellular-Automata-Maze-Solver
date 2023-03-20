@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "board.h"
 #include "pieces.h"
 #include "file_handler.h"
@@ -74,6 +75,180 @@ void printBoard(Board* currentBoard) {
 		puts("");
 	}
 	
+}
+
+// Checks if the game is over
+bool gameOver(Board* currentBoard) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	Piece** boardPieces = currentBoard -> pieces;
+	
+	return (boardPieces[playerPositionY][playerPositionX].state == ALIVE);
+}
+
+// Checks if player have won the game
+bool playerHasWon(Board* currentBoard) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	Piece** boardPieces = currentBoard -> pieces;
+	
+	return (boardPieces[playerPositionY][playerPositionX].state == FINISH);
+	
+}
+
+// Checks if it's a valid move
+bool isValidMove(Board* currentBoard, char direction) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	int sizeRow = currentBoard -> sizeRow;
+	int sizeCol = currentBoard -> sizeCol;
+
+	switch(direction) {
+
+	    case 'w':
+			return playerPositionY - 1 >= 0;
+
+		case 'a':
+			return playerPositionX - 1 >= 0;
+
+		case 's':
+			return playerPositionY + 1 < sizeRow;
+
+		case 'd':
+			return playerPositionX + 1 < sizeCol;
+	}
+
+	return false;
+}
+
+// Returns player new position on the board
+int* playerNewPosition(Board* currentBoard, char direction) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	int sizeRow = currentBoard -> sizeRow;
+	int sizeCol = currentBoard -> sizeCol;
+	int* newPosition = malloc(2*sizeof(int));
+
+	newPosition[0] = playerPositionX;
+	newPosition[1] = playerPositionY;
+	
+	switch(direction) {
+
+	    case 'w':
+			if(playerPositionY - 1 >= 0)
+				newPosition[1] = playerPositionY - 1;
+			break;
+
+		case 'a':
+			if(playerPositionX - 1 >= 0)
+				newPosition[0] = playerPositionX - 1;
+			break;
+
+		case 's':
+			if(playerPositionY + 1 < sizeRow)
+				newPosition[1] = playerPositionY + 1;
+			break;
+
+		case 'd':
+			if(playerPositionX + 1 < sizeCol)
+				newPosition[0] = playerPositionX + 1;
+			break;
+	}
+
+	return newPosition;
+	
+}
+
+// Auxiliar function to print piece state
+void printNextMovementsAux(enum PieceState pieceState, int neighboursAlive) {
+
+	switch(pieceState) {
+
+	    case START:
+			puts("Start Piece");
+			break;
+
+		case FINISH:
+			puts("Game Won");
+			break;
+
+	    case DEAD:
+			if(neighboursAlive == 2 || neighboursAlive == 3)
+				puts("Game Over");
+			else
+				puts("Okay");
+			break;
+
+	    case ALIVE:
+			if(neighboursAlive >= 4 && neighboursAlive < 7)
+				puts("Game Over");
+			else
+				puts("Okay");
+			break;
+			
+	}
+	
+}
+
+// Prints if the possibles next movements results in endgame or nor
+void printNextMovements(Board* currentBoard) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	int sizeRow = currentBoard -> sizeRow;
+	int sizeCol = currentBoard -> sizeCol;
+	int neighboursAlive = 0;
+	enum PieceState currentPieceState;
+	Piece** boardPieces = currentBoard -> pieces;
+
+	printf("Up: ");
+	
+	// Checks if up movement is valid
+	if(playerPositionY != 0) {
+		currentPieceState = boardPieces[playerPositionY - 1][playerPositionX].state;
+		neighboursAlive = checkNeighbours(currentBoard, playerPositionY - 1, playerPositionX);
+
+		printNextMovementsAux(currentPieceState, neighboursAlive);
+	} else
+		printf("Impossible\n");
+
+	printf("Down: ");
+
+	// Checks if down movement is valid
+	if(playerPositionY != sizeRow - 1) {
+		currentPieceState = boardPieces[playerPositionY + 1][playerPositionX].state;
+		neighboursAlive = checkNeighbours(currentBoard, playerPositionY + 1, playerPositionX);
+
+		printNextMovementsAux(currentPieceState, neighboursAlive);
+	} else
+		printf("Impossible\n");
+
+	printf("Left: ");
+	
+	// Checks if left movement is valid
+	if(playerPositionX != 0) {
+		currentPieceState = boardPieces[playerPositionY][playerPositionX - 1].state;
+		neighboursAlive = checkNeighbours(currentBoard, playerPositionY, playerPositionX - 1);
+
+		printNextMovementsAux(currentPieceState, neighboursAlive);
+	} else
+		printf("Impossible\n");
+
+
+	printf("Right: ");
+	
+	// Checks if right movement is valid
+	if(playerPositionX != sizeCol - 1) {
+		currentPieceState = boardPieces[playerPositionY][playerPositionX + 1].state;
+		neighboursAlive = checkNeighbours(currentBoard, playerPositionY, playerPositionX + 1);
+
+		printNextMovementsAux(currentPieceState, neighboursAlive);
+	} else
+		printf("Impossible\n");
 }
 
 // Prints all info about every Piece on the board
@@ -204,6 +379,7 @@ Board* createCustomBoard(char* boardConfig, int sizeRow, int sizeCol) {
 	return newBoard;
 }
 
+// Counts how many neighbours are alive
 int checkNeighbours(Board* currentBoard, int i, int j) {
 
 	int sizeRow = currentBoard -> sizeRow;
@@ -241,14 +417,26 @@ int checkNeighbours(Board* currentBoard, int i, int j) {
 			if(i == 0 && j == 0) {
 				if(boardPieces[i+1][j+1].state == ALIVE)
 					neighboursAlive++;
+
+				if(boardPieces[i][j+1].state == ALIVE)
+					neighboursAlive++;
 			} else if(i == 0 && j == sizeCol - 1) {
 				if(boardPieces[i+1][j-1].state == ALIVE)
+					neighboursAlive++;
+
+				if(boardPieces[i][j-1].state == ALIVE)
 					neighboursAlive++;
 			} else if(i == sizeRow - 1 && j == 0) {
 				if(boardPieces[i-1][j+1].state == ALIVE)
 					neighboursAlive++;
+
+				if(boardPieces[i][j+1].state == ALIVE)
+					neighboursAlive++;
 			} else if(i == sizeRow - 1 && j == sizeCol - 1) {
 				if(boardPieces[i-1][j-1].state == ALIVE)
+					neighboursAlive++;
+
+				if(boardPieces[i][j-1].state == ALIVE)
 					neighboursAlive++;
 			}
 			break;
@@ -354,13 +542,24 @@ int checkNeighbours(Board* currentBoard, int i, int j) {
 	return neighboursAlive;
 }
 
-void updateBoard(Board* currentBoard) {
+// Updates player position on Board
+void updatePlayerPosition(Player* currentPlayer, int playerNewPositionX, int playerNewPositionY) {
+
+	currentPlayer -> coordinate[0] = playerNewPositionX;
+	currentPlayer -> coordinate[1] = playerNewPositionY;
+}
+
+// Updates current board information
+void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPositionY) {
 
 	int sizeRow = currentBoard -> sizeRow;
 	int sizeCol = currentBoard -> sizeCol;
-	Board* auxBoard = createBoard(sizeRow,sizeCol);
+	Player* currentPlayer = &currentBoard -> player;
 	Piece** boardPieces = currentBoard -> pieces;
+	Board* auxBoard = createBoard(sizeRow,sizeCol);
 	Piece** auxBoardPieces = auxBoard -> pieces;
+
+	updatePlayerPosition(currentPlayer, playerNewPositionX, playerNewPositionY);
 	
 	for(int i = 0; i < sizeRow; i++) {
 		for(int j = 0; j < sizeCol; j++) {
@@ -371,6 +570,9 @@ void updateBoard(Board* currentBoard) {
 
 			    case CORNER:
 
+					if(boardPieces[i][j].state == START || (boardPieces[i][j].state == FINISH))
+						continue;
+					
 					// Corner pieces don't have enough neighbours to stay alive
 					if(boardPieces[i][j].state == ALIVE)
 						auxBoardPieces[i][j].state = DEAD;
@@ -415,7 +617,10 @@ void updateBoard(Board* currentBoard) {
 		}
 	}
 
+	for(int i = 0; i < sizeRow; i++)
+		free(boardPieces[i]);
 	free(boardPieces);
+	
 	currentBoard -> pieces = auxBoardPieces;
 	free(auxBoard);
 }

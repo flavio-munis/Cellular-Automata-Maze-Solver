@@ -1,6 +1,7 @@
 #ifndef BOARD_HEADER_FILE
 #define BOARD_HEADER_FILE
 
+#include <stdbool.h>
 #include "pieces.h"
 
 typedef struct player {
@@ -17,6 +18,11 @@ typedef struct board {
 void printBoard(Board*);
 void debugBoard(Board*);
 Board* createCustomBoard(char*,int,int);
-void updateBoard(Board*);
+void updateBoard(Board*, int, int);
+bool gameOver(Board*);
+bool playerHasWon(Board*);
+void printNextMovements(Board*);
+int* playerNewPosition(Board*, char);
+bool isValidMove(Board*, char);
 
 #endif
