@@ -4,6 +4,7 @@
 #include "menu.h"
 #include "board.h"
 #include "error_handler.h"
+#include "file_handler.h"
 #include "cli_mode.h"
 
 // Commands parameters description definitions
@@ -49,6 +50,5 @@ void customBoard(int parametersSize, char* parameters[]) {
 			playGame(newBoard);
 		}
 	} else
-		invalidParametersError("custom-board", customBoardParameters);
-	
+		invalidParametersError("custom-board", customBoardParameters);	
 }

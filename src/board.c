@@ -26,7 +26,6 @@ Board* createBoard(int sizeRow, int sizeCol) {
 	newBoard -> sizeRow = sizeRow;
 	newBoard -> player = newPlayer;
 	newBoard -> pieces = (Piece**) malloc(sizeRow * sizeof(Piece));
-
 	checkNullPointer((void*) newBoard -> pieces);
 	
 	for(int i = 0; i < sizeRow; i++) {

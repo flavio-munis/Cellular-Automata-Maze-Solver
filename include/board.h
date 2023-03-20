@@ -8,6 +8,11 @@ typedef struct player {
 	int coordinate[2];
 } Player;
 
+typedef struct movements {
+	char* moves;
+	int movesSize;
+} Movements;
+
 typedef struct board {
 	int sizeCol;
 	int sizeRow;

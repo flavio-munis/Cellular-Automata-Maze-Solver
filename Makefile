@@ -16,6 +16,7 @@ SRC = ./src
 APP = ./app
 OBJ = ./obj
 INCLUDE = ./include
+RESULTS = ./results
 
 # Files
 MAIN = ${APP}/main.c
@@ -24,14 +25,18 @@ C_HEADERS = $(wildcard ${INCLUDE}/*.h)
 C_SOURCE = $(wildcard ${SRC}/*.c)
 OBJ_SOURCE = $(subst .c,.o,$(subst $(SRC),$(OBJ), $(C_SOURCE)))
 
-all: ${OBJ} $(PROJECT_NAME)
+all: ${OBJ} $(PROJECT_NAME) ${RESULTS}
+
+$(RESULTS):
+	@ mkdir results
+	@ echo "Results Folder Created"
 
 $(OBJ):
 	@ mkdir obj
 	@ echo "Object Folder Created"
 
 $(PROJECT_NAME): $(OBJ_SOURCE) $(MAIN_OBJ)
-	@ echo 'Compiling Executable File'
+	@ echo 'Compiling Executable File...'
 	@ $(CC) $^ -o $@
 	@ echo 'Finished Building Project!'
 
@@ -48,6 +53,10 @@ $(OBJ)/main.o: $(APP)/main.c
 clean:
 	@ echo "Cleaning All Object Files..."
 	@ rm -rf obj/
+
+clean_results:
+	@ echo "Cleaning All Result Files..."
+	@ rm -f results/*
 
 run:
 ifdef ARGS

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "file_handler.h"
 #include "board.h"
 #include "error_handler.h"
 
@@ -22,7 +23,7 @@ void playGame(Board* currentBoard) {
 	char* movements;
 	int movementsSize = 1;
 
-	movements = (char*) malloc(movementsSize * sizeof(char));
+	movements = (char*) calloc(movementsSize, sizeof(char));
 	checkNullPointer((void*) movements);
 	
 	while(!gameOver(currentBoard) && !playerHasWon(currentBoard)) {
@@ -63,5 +64,12 @@ void playGame(Board* currentBoard) {
 				free(newPosition);
 			}
 		}
+	}
+
+	if(gameOver(currentBoard))
+		printf("\nYou Lost :(\n");
+	else {
+		printf("\nYou Won :)\n");
+		saveBoardInfo(movements, movementsSize - 1);
 	}
 }

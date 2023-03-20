@@ -9,3 +9,6 @@ desafio_stone
 
 # Test Boards
 boards/test*
+
+# Results Files
+results/*
