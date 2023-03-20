@@ -378,10 +378,9 @@ Board* createCustomBoard(char* boardConfig, int sizeRow, int sizeCol) {
 		}
 	}
 
-	// Free memory from pseudoboard
+	// Free memory from pseudoboard matrix
 	for(int i = 0; i < sizeRow; i++)
 		free(pseudoBoard[i]);
-
 	free(pseudoBoard);
 
 	return newBoard;
@@ -625,10 +624,14 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 		}
 	}
 
+	// Free the original piece matrix
 	for(int i = 0; i < sizeRow; i++)
 		free(boardPieces[i]);
 	free(boardPieces);
-	
+
+	// Makes the board pieces matrix points to the auxiliar one created on this functions
 	currentBoard -> pieces = auxBoardPieces;
+
+	// Free the auxiliar Board
 	free(auxBoard);
 }

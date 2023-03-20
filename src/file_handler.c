@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "error_handler.h"
 
+// Read a board config from a file
 int** readBoardFromFile(char* filename, int sizeRow, int sizeCol) {
 
 	FILE* boardDescription = fopen(filename, "r");

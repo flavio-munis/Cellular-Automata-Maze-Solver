@@ -50,4 +50,8 @@ clean:
 	@ rm -rf obj/
 
 run:
+ifdef ARGS
+	@ ./${PROJECT_NAME} ${ARGS}
+else
 	@ ./${PROJECT_NAME}
+endif

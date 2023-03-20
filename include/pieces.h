@@ -4,7 +4,7 @@
 enum PieceType {
 	CORNER = 3,
 	WALL = 5,
-	NORMAL = 8,
+	NORMAL = 8
 };
 
 enum PieceState {
