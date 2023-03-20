@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "pieces.h"
+#include "error_handler.h"
 
 // Creates a new piece and config it's attributes
 Piece* createPiece(enum PieceType type, enum PieceState state) {
 
 	Piece* newPiece = (Piece*) malloc(sizeof(Piece));
-
+	checkNullPointer((void*) newPiece);
+	
 	newPiece -> type = type;
 	newPiece -> state = state;
 

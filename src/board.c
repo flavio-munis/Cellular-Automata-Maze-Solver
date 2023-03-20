@@ -4,6 +4,7 @@
 #include "board.h"
 #include "pieces.h"
 #include "file_handler.h"
+#include "error_handler.h"
 
 // Functions Declarations
 int checkNeighbours(Board*, int, int);
@@ -14,6 +15,8 @@ Board* createBoard(int sizeRow, int sizeCol) {
 	Board* newBoard = (Board*) malloc(sizeof(Board));
 	Player newPlayer;
 
+	checkNullPointer((void*) newBoard);
+	
 	// Iniciates player attribute
 	newPlayer.coordinate[0] = 0;
 	newPlayer.coordinate[1] = 0;
@@ -23,12 +26,15 @@ Board* createBoard(int sizeRow, int sizeCol) {
 	newBoard -> sizeRow = sizeRow;
 	newBoard -> player = newPlayer;
 	newBoard -> pieces = (Piece**) malloc(sizeRow * sizeof(Piece));
+
+	checkNullPointer((void*) newBoard -> pieces);
 	
 	for(int i = 0; i < sizeRow; i++) {
 
 		// Allocates memory for each row
 		newBoard -> pieces[i] = (Piece*) malloc(sizeCol * sizeof(Piece));
-
+		checkNullPointer((void*) newBoard -> pieces[i]);
+		
 		// Adds all pieces to the 
 		for(int j = 0; j < sizeCol; j++) {
 			newBoard -> pieces[i][j] = *createPiece(findType(i,j,sizeRow - 1,sizeCol - 1), findState(i,j,sizeRow - 1, sizeCol - 1));
@@ -133,6 +139,8 @@ int* playerNewPosition(Board* currentBoard, char direction) {
 	int sizeCol = currentBoard -> sizeCol;
 	int* newPosition = malloc(2*sizeof(int));
 
+	checkNullPointer((void*) newPosition);
+	
 	newPosition[0] = playerPositionX;
 	newPosition[1] = playerPositionY;
 	

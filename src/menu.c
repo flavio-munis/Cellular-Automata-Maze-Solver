@@ -2,16 +2,20 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "board.h"
+#include "error_handler.h"
 
+// Clean terminal
 void cleanTerminal() {
 	system("clear");
 }
 
+// Flushes all of stdin buffered data
 void flushStdin() {
 	int c;
 	while ((c = getchar()) != '\n' && c != EOF);
 }
 
+// Handles all of games interface mechanics
 void playGame(Board* currentBoard) {
 
 	char direction;
@@ -19,6 +23,7 @@ void playGame(Board* currentBoard) {
 	int movementsSize = 1;
 
 	movements = (char*) malloc(movementsSize * sizeof(char));
+	checkNullPointer((void*) movements);
 	
 	while(!gameOver(currentBoard) && !playerHasWon(currentBoard)) {
 
@@ -32,7 +37,8 @@ void playGame(Board* currentBoard) {
 		puts("");
 
 		printf("Movements: ");
-		
+
+		// Prints List of movements
 		for(int i = 0; i < movementsSize - 1; i++)
 			printf("%c ", movements[i]);
 		
@@ -51,6 +57,7 @@ void playGame(Board* currentBoard) {
 				movementsSize++;
 
 				movements = (char*) realloc(movements, movementsSize * sizeof(char));
+				checkNullPointer((void*) movements);
 				
 				updateBoard(currentBoard, newPosition[0], newPosition[1]);
 				free(newPosition);
