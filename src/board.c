@@ -6,9 +6,6 @@
 #include "file_handler.h"
 #include "error_handler.h"
 
-// Functions Declarations
-int checkNeighbours(Board*, int, int);
-
 // Creates a new Board with dynamic size
 Board* createBoard(int sizeRow, int sizeCol) {
 
@@ -43,45 +40,6 @@ Board* createBoard(int sizeRow, int sizeCol) {
 	return newBoard;
 }
 
-// Prints the current board to the screen
-void printBoard(Board* currentBoard) {
-
-	Piece** boardPieces = currentBoard -> pieces;
-	int playerPositionX = currentBoard -> player.coordinate[0];
-	int playerPositionY = currentBoard -> player.coordinate[1];
-	
-	for(int i = 0; i < currentBoard -> sizeRow; i++) {
-		for(int j = 0; j < currentBoard -> sizeCol; j++) {
-
-			if(playerPositionY == i && playerPositionX == j) {
-				printf("> ");
-				continue;
-			}
-			
-			switch(boardPieces[i][j].state) {
-
-				case DEAD:
-					printf("◻ ");
-					break;
-
-				case ALIVE:
-					printf("▨ ");
-					break;
-
-				case START:
-					printf("▣ ");
-					break;
-
-				case FINISH:
-					printf("▣ ");
-					break;
-			}
-		}
-		puts("");
-	}
-	
-}
-
 // Checks if the game is over
 bool gameOver(Board* currentBoard) {
 
@@ -101,32 +59,6 @@ bool playerHasWon(Board* currentBoard) {
 	
 	return (boardPieces[playerPositionY][playerPositionX].state == FINISH);
 	
-}
-
-// Checks if it's a valid move
-bool isValidMove(Board* currentBoard, char direction) {
-
-	int playerPositionX = currentBoard -> player.coordinate[0];
-	int playerPositionY = currentBoard -> player.coordinate[1];
-	int sizeRow = currentBoard -> sizeRow;
-	int sizeCol = currentBoard -> sizeCol;
-
-	switch(direction) {
-
-	    case 'w':
-			return playerPositionY - 1 >= 0;
-
-		case 'a':
-			return playerPositionX - 1 >= 0;
-
-		case 's':
-			return playerPositionY + 1 < sizeRow;
-
-		case 'd':
-			return playerPositionX + 1 < sizeCol;
-	}
-
-	return false;
 }
 
 // Returns player new position on the board
@@ -168,94 +100,6 @@ int* playerNewPosition(Board* currentBoard, char direction) {
 
 	return newPosition;
 	
-}
-
-// Auxiliar function to print piece state
-void printNextMovementsAux(enum PieceState pieceState, int neighboursAlive) {
-
-	switch(pieceState) {
-
-	    case START:
-			puts("Start Piece");
-			break;
-
-		case FINISH:
-			puts("Game Won");
-			break;
-
-	    case DEAD:
-			if(neighboursAlive == 2 || neighboursAlive == 3)
-				puts("Game Over");
-			else
-				puts("Okay");
-			break;
-
-	    case ALIVE:
-			if(neighboursAlive >= 4 && neighboursAlive < 7)
-				puts("Game Over");
-			else
-				puts("Okay");
-			break;
-			
-	}
-	
-}
-
-// Prints if the possibles next movements results in endgame or nor
-void printNextMovements(Board* currentBoard) {
-
-	int playerPositionX = currentBoard -> player.coordinate[0];
-	int playerPositionY = currentBoard -> player.coordinate[1];
-	int sizeRow = currentBoard -> sizeRow;
-	int sizeCol = currentBoard -> sizeCol;
-	int neighboursAlive = 0;
-	enum PieceState currentPieceState;
-	Piece** boardPieces = currentBoard -> pieces;
-
-	printf("Up: ");
-	
-	// Checks if up movement is valid
-	if(playerPositionY != 0) {
-		currentPieceState = boardPieces[playerPositionY - 1][playerPositionX].state;
-		neighboursAlive = checkNeighbours(currentBoard, playerPositionY - 1, playerPositionX);
-
-		printNextMovementsAux(currentPieceState, neighboursAlive);
-	} else
-		printf("Impossible\n");
-
-	printf("Down: ");
-
-	// Checks if down movement is valid
-	if(playerPositionY != sizeRow - 1) {
-		currentPieceState = boardPieces[playerPositionY + 1][playerPositionX].state;
-		neighboursAlive = checkNeighbours(currentBoard, playerPositionY + 1, playerPositionX);
-
-		printNextMovementsAux(currentPieceState, neighboursAlive);
-	} else
-		printf("Impossible\n");
-
-	printf("Left: ");
-	
-	// Checks if left movement is valid
-	if(playerPositionX != 0) {
-		currentPieceState = boardPieces[playerPositionY][playerPositionX - 1].state;
-		neighboursAlive = checkNeighbours(currentBoard, playerPositionY, playerPositionX - 1);
-
-		printNextMovementsAux(currentPieceState, neighboursAlive);
-	} else
-		printf("Impossible\n");
-
-
-	printf("Right: ");
-	
-	// Checks if right movement is valid
-	if(playerPositionX != sizeCol - 1) {
-		currentPieceState = boardPieces[playerPositionY][playerPositionX + 1].state;
-		neighboursAlive = checkNeighbours(currentBoard, playerPositionY, playerPositionX + 1);
-
-		printNextMovementsAux(currentPieceState, neighboursAlive);
-	} else
-		printf("Impossible\n");
 }
 
 // Prints all info about every Piece on the board

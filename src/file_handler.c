@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include "moviments.h"
 #include "board.h"
 #include "error_handler.h"
 
@@ -62,18 +63,19 @@ char* createFileName() {
 }
 
 // Saves winning movements list to a file
-void saveBoardInfo(char* movements, int movementsSize){
+void saveBoardInfo(MovimentVec* moviments){
 
 	char* fileName = createFileName();
 	FILE* newFile = fopen(fileName, "w+");
+	enum MovimentType* movimentArr = moviments -> moves;
 
 	checkNullPointer((void*) newFile);
 	
-	for(int i = 0; i < movementsSize; i++) {
-		if(i != movementsSize - 1)
-			fprintf(newFile, "%c ", movements[i]);
+	for(int i = 0; i < moviments -> totalElements; i++) {
+		if(i != moviments -> totalElements - 1)
+			fprintf(newFile, "%c ", movimentArr[i]);
 		else
-			fprintf(newFile, "%c", movements[i]);
+			fprintf(newFile, "%c", movimentArr[i]);
 	}
 		
 	free(fileName);
