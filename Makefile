@@ -9,6 +9,7 @@ CC_FLAGS =  -c \
 	-I $(INCLUDE) \
 	-Wall \
 	-pedantic \
+	-g \
 	-o
 
 # Folders

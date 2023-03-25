@@ -47,8 +47,8 @@ void freeInfo(Info* currentInfo) {
 // Calculates the player distance to the finish square
 double distanceToFinish(Board* currentBoard) {
 
-	double sizeCol = (double) currentBoard -> sizeCol;
-	double sizeRow = (double) currentBoard -> sizeRow;
+	double sizeCol = (double) currentBoard -> sizeCol - 1;
+	double sizeRow = (double) currentBoard -> sizeRow - 1;
     double playerPositionX = (double) currentBoard -> player.coordinate[0];
 	double playerPositionY = (double) currentBoard -> player.coordinate[1];
 
@@ -170,6 +170,15 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 	return copyInfo(result);
 }
 
+void auxDiscoverOptimalPath(Info* currentInfo, enum MovimentStates currentMove) {
+
+	int* playerCoordinates = playerNewPosition(currentInfo -> currentBoard, currentMove);
+
+	addToMovimentVec(currentInfo -> moviments, currentMove);
+	updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
+	free(playerCoordinates);
+}
+
 // Recursive function that searches through n possibles moviments, beign n the depth of search, and returns the one which is termitates closer to the finish square, don't end up in a dead-end, and have more moves.
 Info* discoverOptimalPath(Info* currentInfo, int depth) {
 	
@@ -180,65 +189,96 @@ Info* discoverOptimalPath(Info* currentInfo, int depth) {
 		Info* upInfo = NULL, *downInfo = NULL, *rightInfo = NULL, *leftInfo = NULL;
 		Info* result = NULL;
 		NextMoves* nextUpdate = getNextMoviments(currentInfo -> currentBoard);
-		int* playerCoordinates = NULL;
-
+		
+		if(playerHasWon(currentInfo -> currentBoard)) {
+			free(nextUpdate);
+			return copyInfo(currentInfo);
+		}
+			
 		if(nextUpdate -> up != IMPOSSIBLE && nextUpdate -> up != GAME_OVER) {
 			newInfo = copyInfo(currentInfo);
-			playerCoordinates = playerNewPosition(newInfo -> currentBoard, UP);
-
-			addToMovimentVec(newInfo -> moviments, UP);
-			
-			updateBoard(newInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
-			free(playerCoordinates);
+			auxDiscoverOptimalPath(newInfo, UP);
 			
 			upInfo = discoverOptimalPath(newInfo, depth - 1);
+
 			freeInfo(newInfo);
+		} else if(nextUpdate -> up == GAME_WON) {
+			newInfo = copyInfo(currentInfo);
+			auxDiscoverOptimalPath(newInfo, UP);
+
+			free(nextUpdate);
+			
+			return newInfo;
 		}
 		
 		if(nextUpdate -> down != IMPOSSIBLE && nextUpdate -> down != GAME_OVER) {
 			newInfo = copyInfo(currentInfo);
-			playerCoordinates = playerNewPosition(newInfo -> currentBoard, DOWN);
-
-			addToMovimentVec(newInfo -> moviments, DOWN);
-			
-			updateBoard(newInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
-			free(playerCoordinates);
+			auxDiscoverOptimalPath(newInfo, DOWN);			
 			
 			downInfo = discoverOptimalPath(newInfo, depth - 1);
 			freeInfo(newInfo);
+		} else if(nextUpdate -> down == GAME_WON) {
+			newInfo = copyInfo(currentInfo);
+			auxDiscoverOptimalPath(newInfo, DOWN);
+
+			free(nextUpdate);
+
+			if(upInfo)
+				freeInfo(upInfo);
+			
+			return newInfo;
 		}
 
 		if(nextUpdate -> left != IMPOSSIBLE && nextUpdate -> left != GAME_OVER) {
 			newInfo = copyInfo(currentInfo);
-			playerCoordinates = playerNewPosition(newInfo -> currentBoard, LEFT);
+			auxDiscoverOptimalPath(newInfo, LEFT);
 
-			addToMovimentVec(newInfo -> moviments, LEFT);
-
-			updateBoard(newInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
-			free(playerCoordinates);
-			
 			leftInfo = discoverOptimalPath(newInfo, depth - 1);
 			freeInfo(newInfo);
+		} else if(nextUpdate -> left == GAME_WON) {
+			newInfo = copyInfo(currentInfo);
+			auxDiscoverOptimalPath(newInfo, LEFT);
+
+			free(nextUpdate);
+			
+			if(upInfo)
+				freeInfo(upInfo);
+			
+			if(downInfo)
+				freeInfo(downInfo);
+			
+			return newInfo;
 		}
 		
 		if(nextUpdate -> right != IMPOSSIBLE && nextUpdate -> right != GAME_OVER) {
 			newInfo = copyInfo(currentInfo);
-			playerCoordinates = playerNewPosition(newInfo -> currentBoard, RIGHT);
+			auxDiscoverOptimalPath(newInfo, RIGHT);
 
-			addToMovimentVec(newInfo -> moviments, RIGHT);
-			
-			updateBoard(newInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
-			free(playerCoordinates);
-			
 			rightInfo = discoverOptimalPath(newInfo, depth - 1);
 			freeInfo(newInfo);
+		} else if(nextUpdate -> up == GAME_WON) {
+			newInfo = copyInfo(currentInfo);
+			auxDiscoverOptimalPath(newInfo, RIGHT);
+
+			free(nextUpdate);
+
+			if(upInfo)
+				freeInfo(upInfo);
+			
+			if(downInfo)
+				freeInfo(downInfo);
+
+			if(leftInfo)
+				freeInfo(leftInfo);
+			
+			return newInfo;
 		}
 		
 		free(nextUpdate);
 
 		result = closerToFinish(currentInfo, upInfo, downInfo, leftInfo, rightInfo);
 			
-		if(upInfo && upInfo)
+		if(upInfo)
 			freeInfo(upInfo);
 
 		if(downInfo)
@@ -259,36 +299,58 @@ void autoPlay(Board* currentBoard, int depth) {
 
 	MovimentVec* moviments = initMovimentVec();
 	Info* currentInfo = createInfo(currentBoard, moviments);
+	size_t* currentIndex = &moviments -> totalElements;
 	Info* result;
 	int* playerCoordinates;
 	enum MovimentType newMoviment;
+	bool gameWonState = false;
 
 	puts("Algorithm is Searching for a Path...\n");
 	
 	while(!gameOver(currentInfo -> currentBoard) && !playerHasWon(currentInfo -> currentBoard)) {
-		result = discoverOptimalPath(currentInfo, depth);
-
-		if(result -> moviments -> totalElements <= currentInfo -> moviments -> totalElements)
-			deadEndPath();
 		
-		newMoviment = result -> moviments -> moves[currentInfo -> moviments -> totalElements];
+		if(!gameWonState) {
+			result = discoverOptimalPath(currentInfo, depth);
 
-        //printf("Moviments: ");
-		//printMoviments(result -> moviments);
-		//printf("Total Elements:%ld\n", result -> moviments -> totalElements);
+			if(result -> moviments -> totalElements <= currentInfo -> moviments -> totalElements)
+				deadEndPath();
+
+			gameWonState = playerHasWon(result -> currentBoard);
+
+			newMoviment = result -> moviments -> moves[*currentIndex];
+
+			printf("\nMoviments: ");
+			printMoviments(result -> moviments);
+			printf("Total Elements:%ld\n", result -> moviments -> totalElements);
 		
-		playerCoordinates = playerNewPosition(currentInfo -> currentBoard, newMoviment);
-		addToMovimentVec(currentInfo -> moviments, newMoviment);
-		updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
+			playerCoordinates = playerNewPosition(currentInfo -> currentBoard, newMoviment);
+			addToMovimentVec(currentInfo -> moviments, newMoviment);
+			updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
 
-		free(playerCoordinates);
-		freeInfo(result);
+			free(playerCoordinates);
+			if(!gameWonState)
+				freeInfo(result);
+		} else {
+			newMoviment = result -> moviments -> moves[*currentIndex];
+
+			printf("\nMoviments: ");
+			printMoviments(result -> moviments);
+			printf("Total Elements:%ld\n", result -> moviments -> totalElements);
+		
+			playerCoordinates = playerNewPosition(currentInfo -> currentBoard, newMoviment);
+			addToMovimentVec(currentInfo -> moviments, newMoviment);
+			updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
+
+			free(playerCoordinates);
+			
+		}
 					 
 		//printBoard(currentInfo -> currentBoard);
-		//printf("\nMoviments: ");
-		//printMoviments(currentInfo -> moviments);
-		//printf("\nCurrent Distance to Finish: %.2f\n\n",distanceToFinish(currentInfo -> currentBoard));
-		//printNextMoviments(currentInfo -> currentBoard);
+		printf("\nMoviments: ");
+		printMoviments(currentInfo -> moviments);
+		printf("Total Elements:%ld\n", currentInfo -> moviments -> totalElements);
+		printf("\nCurrent Distance to Finish: %.2f\n\n",distanceToFinish(currentInfo -> currentBoard));
+		printNextMoviments(currentInfo -> currentBoard);
 		//puts("");
 	}
 	
