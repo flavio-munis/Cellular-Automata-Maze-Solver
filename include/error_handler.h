@@ -4,5 +4,6 @@
 void checkNullPointer(void*);
 void invalidParametersError(char*, char*);
 void invalidCommandError();
+void deadEndPath();
 
 #endif

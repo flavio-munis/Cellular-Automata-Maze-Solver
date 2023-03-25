@@ -1,9 +1,3 @@
-/* 
-
-   Current Solution takes O(4^n), where n equals the depth used to calculate movements ahead.
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -96,8 +90,6 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				result = upInfo;
 				smallestDistance = distanceUp;
 			}
-		} else {
-			//printf("Game Over Up!\n\n");
 		}
 
 		free(nextMovements);
@@ -116,8 +108,6 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				result = downInfo;
 				smallestDistance = distanceDown;
 			}
-		} else {
-			//printf("Game Over Down!\n\n");
 		}
 
 		free(nextMovements);
@@ -136,8 +126,6 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				result = leftInfo;
 				smallestDistance = distanceLeft;
 			}
-		} else {
-			//printf("Game Over Left!\n\n");
 		}
 
 		free(nextMovements);
@@ -156,8 +144,6 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				result = rightInfo;
 				smallestDistance = distanceRight;
 			}
-		} else {
-			//printf("Game Over Right!\n\n");
 		}
 
 		free(nextMovements);
@@ -181,27 +167,10 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				result = rightInfo;
 	}
 	
-	/*
-	if(currentInfo)
-		printf("Current Board Distance: %.2f\n", distanceToFinish(currentInfo -> currentBoard));
-
-	if(upInfo)
-		printf("Up Moviment Board Distance: %.2f\n", distanceToFinish(upInfo -> currentBoard));
-
-	if(downInfo)
-		printf("Down Moviment Board Distance: %.2f\n", distanceToFinish(downInfo -> currentBoard));
-
-	if(leftInfo)
-		printf("Left Moviment Board Distance: %.2f\n", distanceToFinish(leftInfo -> currentBoard));
-
-	if(rightInfo)
-	printf("Right Moviment Board Distance: %.2f\n", distanceToFinish(rightInfo -> currentBoard));
-
-	puts("");*/
-	
 	return copyInfo(result);
 }
 
+// Recursive function that searches through n possibles moviments, beign n the depth of search, and returns the one which is termitates closer to the finish square, don't end up in a dead-end, and have more moves.
 Info* discoverOptimalPath(Info* currentInfo, int depth) {
 	
 	if(depth == 0){
@@ -285,6 +254,7 @@ Info* discoverOptimalPath(Info* currentInfo, int depth) {
 	}
 }
 
+// Autoplay through the entire maze and writes the winning path to a file
 void autoPlay(Board* currentBoard, int depth) {
 
 	MovimentVec* moviments = initMovimentVec();
@@ -292,30 +262,20 @@ void autoPlay(Board* currentBoard, int depth) {
 	Info* result;
 	int* playerCoordinates;
 	enum MovimentType newMoviment;
+
+	puts("Algorithm is Searching for a Path...\n");
 	
 	while(!gameOver(currentInfo -> currentBoard) && !playerHasWon(currentInfo -> currentBoard)) {
 		result = discoverOptimalPath(currentInfo, depth);
 
-		if(result -> moviments -> totalElements <= currentInfo -> moviments -> totalElements) {
-
-			printf("Moviments: ");
-			printMoviments(result -> moviments);
-			printf("Total Elements:%ld\n", result -> moviments -> totalElements);
-
-			printf("\nMoviments: ");
-			printMoviments(currentInfo -> moviments);
-
-			puts("");
-			
-			printNextMoviments(currentInfo -> currentBoard);
-			
-			exit(1);
-	   }
+		if(result -> moviments -> totalElements <= currentInfo -> moviments -> totalElements)
+			deadEndPath();
+		
 		newMoviment = result -> moviments -> moves[currentInfo -> moviments -> totalElements];
 
-        printf("Moviments: ");
-		printMoviments(result -> moviments);
-		printf("Total Elements:%ld\n", result -> moviments -> totalElements);
+        //printf("Moviments: ");
+		//printMoviments(result -> moviments);
+		//printf("Total Elements:%ld\n", result -> moviments -> totalElements);
 		
 		playerCoordinates = playerNewPosition(currentInfo -> currentBoard, newMoviment);
 		addToMovimentVec(currentInfo -> moviments, newMoviment);
@@ -325,20 +285,20 @@ void autoPlay(Board* currentBoard, int depth) {
 		freeInfo(result);
 					 
 		//printBoard(currentInfo -> currentBoard);
-		printf("\nMoviments: ");
-		printMoviments(currentInfo -> moviments);
-		printf("\nCurrent Distance to Finish: %.2f\n\n",distanceToFinish(currentInfo -> currentBoard));
-		printNextMoviments(currentInfo -> currentBoard);
-		puts("");
+		//printf("\nMoviments: ");
+		//printMoviments(currentInfo -> moviments);
+		//printf("\nCurrent Distance to Finish: %.2f\n\n",distanceToFinish(currentInfo -> currentBoard));
+		//printNextMoviments(currentInfo -> currentBoard);
+		//puts("");
 	}
 	
 	if(gameOver(currentInfo -> currentBoard))
-		printf("\nYou Lost :(\n");
+		printf("The Algorithm Lost The Game! :(\n");
 	else if(playerHasWon(currentInfo -> currentBoard)) {
-		printf("\nYou Won :)\n");
+		printf("The Algorithm Has Found a Correct Path! :)\n");
 		saveBoardInfo(currentInfo -> moviments);
 	} else {
-		printf("Game is Not Finished!\n");
+		printf("The Algorithm Couldn't Finish The Game! :(\n");
 	}
 
 	freeInfo(currentInfo);
