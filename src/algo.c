@@ -97,7 +97,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				smallestDistance = distanceUp;
 			}
 		} else {
-			printf("Game Over Up!\n\n");
+			//printf("Game Over Up!\n\n");
 		}
 
 		free(nextMovements);
@@ -117,7 +117,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				smallestDistance = distanceDown;
 			}
 		} else {
-			printf("Game Over Down!\n\n");
+			//printf("Game Over Down!\n\n");
 		}
 
 		free(nextMovements);
@@ -137,7 +137,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				smallestDistance = distanceLeft;
 			}
 		} else {
-			printf("Game Over Left!\n\n");
+			//printf("Game Over Left!\n\n");
 		}
 
 		free(nextMovements);
@@ -157,7 +157,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 				smallestDistance = distanceRight;
 			}
 		} else {
-			printf("Game Over Right!\n\n");
+			//printf("Game Over Right!\n\n");
 		}
 
 		free(nextMovements);
@@ -199,7 +199,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 
 	puts("");*/
 	
-	return result;
+	return copyInfo(result);
 }
 
 Info* discoverOptimalPath(Info* currentInfo, int depth) {
@@ -269,16 +269,16 @@ Info* discoverOptimalPath(Info* currentInfo, int depth) {
 
 		result = closerToFinish(currentInfo, upInfo, downInfo, leftInfo, rightInfo);
 			
-		if(upInfo && upInfo != result)
+		if(upInfo && upInfo)
 			freeInfo(upInfo);
 
-		if(downInfo && downInfo != result)
+		if(downInfo)
 			freeInfo(downInfo);
 
-		if(leftInfo && leftInfo != result)
+		if(leftInfo)
 			freeInfo(leftInfo);
 
-		if(rightInfo && rightInfo != result)
+		if(rightInfo)
 			freeInfo(rightInfo);
 		
 		return result;
