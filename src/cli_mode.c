@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "menu.h"
+#include "moviments.h"
 #include "algo.h"
 #include "board.h"
 #include "error_handler.h"
@@ -16,6 +17,7 @@ char* customBoardParameters = "./executable_file custom-board [path_to_custom_bo
 
 char* autoPlayParameters = "./executable_file autoplay [depth] [optional: path_to_custom_board_file] [optional: rows] [optional: columns]";
 
+char* checkSolutionParameters = "./executable_file autosolve [path_to_solution_file] [optional: path_to_custom_board_file] [optional: rows] [optional: columns]";
 
 // Checks if a given string only has numbers
 bool digitsOnly(char *s) {
@@ -34,6 +36,8 @@ void showListOfCommands() {
 	printf("\n*custom-board: This command is used for creating a new game from a custom board file. \nThe command description is the following: \n\n%s\n", customBoardParameters);
 
 	printf("\n*autoplay: Finds a resolution path to the template board or the custom board passed along.\nThe command descriton is the following: \n\n%s\n", autoPlayParameters);
+
+	printf("\n*check-solution: Checks if a solution file gets to a valid solution in a given board.\n\nThe command descriton is the following: \n\n%s\n", checkSolutionParameters);
 	
 }
 
@@ -94,5 +98,47 @@ void autoPlayCommand(int parametersSize, char** parameters, char* pathToBoard) {
 	  
 	} else
 		invalidParametersError("autoplay", autoPlayParameters);
+	
+}
+
+// Executes the autosolve command
+void checkSolution(int parametersSize, char** parameters, char* pathToBoard) {
+
+	char* pathToSolutionFile;
+	Board* newBoard;
+	MovimentVec* moviments;
+
+	if(parametersSize == 6) {
+
+		char* sizeRow = parameters[4];
+		char* sizeCol = parameters[5];
+		
+		pathToSolutionFile = parameters[2];
+
+		if(!digitsOnly(sizeRow) || !digitsOnly(sizeCol))
+			invalidParametersError("check-solution", checkSolutionParameters);
+		else{
+			newBoard = createCustomBoard(pathToBoard, atoi(sizeRow), atoi(sizeCol));
+			moviments = readMovimentsFromFile(pathToSolutionFile);
+			solveBoard(newBoard, moviments);
+
+			freeBoard(newBoard);
+			freeMovimentVec(moviments);
+		}
+		
+	} else if(parametersSize == 3) {
+		
+		pathToSolutionFile = parameters[2];
+
+		newBoard = createCustomBoard(pathToBoard, SIZE_ROW, SIZE_COL);
+		moviments = readMovimentsFromFile(pathToSolutionFile);
+
+		solveBoard(newBoard, moviments);
+
+		freeBoard(newBoard);
+		freeMovimentVec(moviments);
+		
+	} else
+		invalidParametersError("check-solution", checkSolutionParameters);
 	
 }

@@ -45,11 +45,16 @@ void identifyArguments(int parametersSize, char* parameters[]) {
 		customBoard(parametersSize, parameters);
 	else if(strcmp(command, "-h") == 0)
 		showListOfCommands();
-	else if(strcmp(command, "autoplay") == 0){
+	else if(strcmp(command, "autoplay") == 0) {
 		if(parametersSize == 6)
 			autoPlayCommand(parametersSize, parameters, parameters[3]);
 		else
 			autoPlayCommand(parametersSize, parameters, TEMPLATE_BOARD);
+	} else if(strcmp(command, "check-solution") == 0){
+		if(parametersSize == 6)
+			checkSolution(parametersSize, parameters, parameters[3]);
+		else
+			checkSolution(parametersSize, parameters, TEMPLATE_BOARD);
 	} else
 		invalidCommandError();
 }

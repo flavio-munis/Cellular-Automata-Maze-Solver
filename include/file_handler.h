@@ -5,5 +5,6 @@
 
 int** readBoardFromFile(char*, int, int);
 void saveBoardInfo(MovimentVec*);
+MovimentVec* readMovimentsFromFile(char*);
 
 #endif

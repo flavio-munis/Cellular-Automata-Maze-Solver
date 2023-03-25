@@ -81,3 +81,21 @@ void saveBoardInfo(MovimentVec* moviments){
 	free(fileName);
 	fclose(newFile);
 }
+
+// Reads a sequence of moviments from a file and returns a moviment vector
+MovimentVec* readMovimentsFromFile(char* pathToSolutionFile) {
+
+	MovimentVec* moviments = initMovimentVec();
+	char c;
+	FILE* solutionFile = fopen(pathToSolutionFile, "r");
+	
+	checkNullPointer((void*) solutionFile);
+
+	while((c = fgetc(solutionFile)) != EOF) {
+		if(c == 'U' || c == 'L' || c == 'D' || c == 'R')
+			addToMovimentVec(moviments, convertCharToMove(c));
+	}
+
+	fclose(solutionFile);
+	return moviments;
+}

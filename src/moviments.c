@@ -30,16 +30,18 @@ bool isValidMove(Board* currentBoard, char direction) {
 
 // Convert Keyboard Input to moviment enum
 enum MovimentType convertCharToMove(char input) {
-	switch(input) {
-	    case 'w':
-			return UP;
-		case 'a':
-			return LEFT;
-	    case 's':
-			return DOWN;
-		case 'd':
-			return RIGHT;
-	}
+
+	if(input == 'w' || input == 'U')
+		return UP;
+
+	if(input == 'a' || input == 'L')
+		return LEFT;
+
+	if(input == 's' || input == 'D')
+		return DOWN;
+
+	if(input == 'd' || input == 'R')
+		return RIGHT;
 
 	return UP;
 }
@@ -232,4 +234,31 @@ NextMoves* getNextMoviments(Board* currentBoard) {
 		nextMoviments -> right = IMPOSSIBLE;
 
 	return nextMoviments;
+}
+
+// Solves current board using a pre made solution
+void solveBoard(Board* currentBoard, MovimentVec* moviments) {
+
+	bool gameOverState = false, gameWonState = false;
+	
+	for(int i = 0; i < moviments -> totalElements; i++) {
+
+		int* newPosition = playerNewPosition(currentBoard, moviments -> moves[i]);
+		updateBoard(currentBoard, newPosition[0], newPosition[1]);
+			
+		free(newPosition);
+		
+		if(gameOver(currentBoard)) {
+			printf("Solution Leads to Game Over!\n");
+			gameOverState = true;
+			break;
+		} else if(playerHasWon(currentBoard)) {
+			printf("You Won! Current Solution is Valid!\n");
+			gameWonState = true;
+			break;
+		}
+	}
+
+	if(!gameOverState && !gameWonState)
+		printf("Incomplete Solution!\n");
 }
