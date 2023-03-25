@@ -135,13 +135,6 @@ void playGame(Board* currentBoard) {
 		printDirections(moviments);
 		
 		puts("");
-
-		printf("\nDirections Size: %ld\n", moviments -> movesSize);
-		printf("Directions Total Elements: %ld\n", moviments -> totalElements);
-		printf("Directions Vec Size: %ld\n", sizeof(*moviments));
-		printf("Last Direction: %c", moviments -> moves[moviments -> totalElements - 1]);
-		
-		puts("");
 			
 		printf("\nNext Move[w/a/s/d]: ");
 		direction = getchar();
@@ -150,9 +143,10 @@ void playGame(Board* currentBoard) {
 
 		if(direction == 'w' || direction == 'a'|| direction == 's'|| direction == 'd') {
 			if(isValidMove(currentBoard, direction)) {
-				int* newPosition = playerNewPosition(currentBoard, direction);
+				enum MovimentType directionConver = convertCharToMove(direction);
+				int* newPosition = playerNewPosition(currentBoard, directionConver);
 
-				addToMovimentVec(moviments, convertCharToMove(direction));
+				addToMovimentVec(moviments, directionConver);
 				
 				updateBoard(currentBoard, newPosition[0], newPosition[1]);
 				free(newPosition);
@@ -167,5 +161,5 @@ void playGame(Board* currentBoard) {
 		saveBoardInfo(moviments);
 	}
 
-	free(moviments);
+	freeMovimentVec(moviments);
 }

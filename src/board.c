@@ -61,47 +61,6 @@ bool playerHasWon(Board* currentBoard) {
 	
 }
 
-// Returns player new position on the board
-int* playerNewPosition(Board* currentBoard, char direction) {
-
-	int playerPositionX = currentBoard -> player.coordinate[0];
-	int playerPositionY = currentBoard -> player.coordinate[1];
-	int sizeRow = currentBoard -> sizeRow;
-	int sizeCol = currentBoard -> sizeCol;
-	int* newPosition = malloc(2*sizeof(int));
-
-	checkNullPointer((void*) newPosition);
-	
-	newPosition[0] = playerPositionX;
-	newPosition[1] = playerPositionY;
-	
-	switch(direction) {
-
-	    case 'w':
-			if(playerPositionY - 1 >= 0)
-				newPosition[1] = playerPositionY - 1;
-			break;
-
-		case 'a':
-			if(playerPositionX - 1 >= 0)
-				newPosition[0] = playerPositionX - 1;
-			break;
-
-		case 's':
-			if(playerPositionY + 1 < sizeRow)
-				newPosition[1] = playerPositionY + 1;
-			break;
-
-		case 'd':
-			if(playerPositionX + 1 < sizeCol)
-				newPosition[0] = playerPositionX + 1;
-			break;
-	}
-
-	return newPosition;
-	
-}
-
 // Prints all info about every Piece on the board
 void debugBoard(Board* currentBoard) {
 
@@ -477,4 +436,36 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 
 	// Free the auxiliar Board
 	free(auxBoard);
+}
+
+// Frees all memory used by board struct
+void freeBoard(Board* currentBoard) {
+
+	for(int i = 0; i < currentBoard -> sizeRow; i++)
+		free(currentBoard -> pieces[i]);
+		
+	free(currentBoard -> pieces);
+	free(currentBoard);
+}
+
+// Creates a full copy of the current board and returns it as a pointer
+Board* copyBoard(Board* currentBoard) {
+
+	int sizeRow = currentBoard -> sizeRow;
+	int sizeCol = currentBoard -> sizeCol;
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	Piece** currentBoardPieces = currentBoard -> pieces;
+	Board* newBoard = createBoard(sizeRow, sizeCol);
+
+	checkNullPointer((void*) newBoard);
+	
+	newBoard -> player.coordinate[0] = playerPositionX;
+	newBoard -> player.coordinate[1] = playerPositionY;
+	
+	for(int i = 0; i < sizeRow; i++)
+		for(int j = 0; j < sizeCol; j++)
+			newBoard -> pieces[i][j] = currentBoardPieces[i][j];
+
+	return newBoard;
 }

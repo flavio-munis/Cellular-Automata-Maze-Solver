@@ -20,8 +20,8 @@ Board* createCustomBoard(char*,int,int);
 void updateBoard(Board*, int, int);
 bool gameOver(Board*);
 bool playerHasWon(Board*);
-int* playerNewPosition(Board*, char);
-bool isValidMove(Board*, char);
 int checkNeighbours(Board*, int, int);
+void freeBoard(Board*);
+Board* copyBoard(Board*);
 
 #endif

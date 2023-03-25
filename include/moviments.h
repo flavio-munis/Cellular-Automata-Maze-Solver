@@ -37,5 +37,9 @@ bool isValidMove(Board*, char);
 enum MovimentType convertCharToMove(char);
 MovimentVec* initMovimentVec();
 void addToMovimentVec(MovimentVec*, enum MovimentType);
+void freeMovimentVec(MovimentVec*);
+MovimentVec* copyMovimentVec(MovimentVec*);
+int* playerNewPosition(Board*, enum MovimentType);
+void printMoviments(MovimentVec*);
 
 #endif

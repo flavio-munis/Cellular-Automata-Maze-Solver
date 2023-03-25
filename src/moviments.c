@@ -44,6 +44,47 @@ enum MovimentType convertCharToMove(char input) {
 	return UP;
 }
 
+// Returns player new position on the board
+int* playerNewPosition(Board* currentBoard, enum MovimentType direction) {
+
+	int playerPositionX = currentBoard -> player.coordinate[0];
+	int playerPositionY = currentBoard -> player.coordinate[1];
+	int sizeRow = currentBoard -> sizeRow;
+	int sizeCol = currentBoard -> sizeCol;
+	int* newPosition = malloc(2*sizeof(int));
+
+	checkNullPointer((void*) newPosition);
+	
+	newPosition[0] = playerPositionX;
+	newPosition[1] = playerPositionY;
+	
+	switch(direction) {
+
+	    case UP:
+			if(playerPositionY - 1 >= 0)
+				newPosition[1] = playerPositionY - 1;
+			break;
+
+		case LEFT:
+			if(playerPositionX - 1 >= 0)
+				newPosition[0] = playerPositionX - 1;
+			break;
+
+		case DOWN:
+			if(playerPositionY + 1 < sizeRow)
+				newPosition[1] = playerPositionY + 1;
+			break;
+
+		case RIGHT:
+			if(playerPositionX + 1 < sizeCol)
+				newPosition[0] = playerPositionX + 1;
+			break;
+	}
+
+	return newPosition;
+	
+}
+
 // Creates a new moviment vector
 MovimentVec* initMovimentVec() {
 
@@ -60,20 +101,58 @@ MovimentVec* initMovimentVec() {
 	return newMovimentVec;
 }
 
+// Reallocs size of vector
+void reallocMovimentVec(MovimentVec* moviments) {
+	moviments -> moves = realloc(moviments -> moves, moviments -> movesSize * sizeof(enum MovimentType));
+}
+
 // Adds a new element to vector
 void addToMovimentVec(MovimentVec* moviments, enum MovimentType movimentMade) {
 	
 	if(moviments -> totalElements == moviments -> movesSize) {
 		moviments -> movesSize *= 2;
-		moviments -> moves = realloc(moviments -> moves, moviments -> movesSize * sizeof(enum MovimentType));
-
+		reallocMovimentVec(moviments);
 		checkNullPointer((void*) moviments -> moves);
 	}
 
 	moviments -> moves[moviments -> totalElements] = movimentMade;
 	moviments -> totalElements += 1;
 	
-} 
+}
+
+// Frees all memory used by the moviment vector struct
+void freeMovimentVec(MovimentVec* moviments) {
+	free(moviments -> moves);
+	free(moviments);
+}
+
+// Copies all of movimentsvec info to a new instance and returns a pointer to it
+MovimentVec* copyMovimentVec(MovimentVec* moviments) {
+
+	MovimentVec* newMoviments = initMovimentVec();
+
+	checkNullPointer((void*) newMoviments);
+	
+	if(moviments -> movesSize > newMoviments -> movesSize) {
+		newMoviments -> movesSize = moviments -> movesSize;
+		reallocMovimentVec(newMoviments);
+	}
+	 
+	newMoviments -> totalElements = moviments -> totalElements;
+	
+	for(int i = 0; i < newMoviments -> totalElements; i++)
+		newMoviments -> moves[i] = moviments -> moves[i];
+
+	return newMoviments;
+}
+
+// Print all elements presents in the moviments vector
+void printMoviments(MovimentVec* moviments) {
+	for(int i = 0; i < moviments -> totalElements; i++)
+		printf("%c ", moviments -> moves[i]);
+
+	puts("");
+}
 
 // Auxiliar function to print piece state
 enum MovimentStates getNextMovimentsAux(enum PieceState pieceState, int neighboursAlive) {

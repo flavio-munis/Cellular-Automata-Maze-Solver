@@ -4,5 +4,6 @@
 #include "board.h"
 
 void playGame(Board*);
+void printBoard(Board*);
 
 #endif

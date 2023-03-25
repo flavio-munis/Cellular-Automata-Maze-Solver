@@ -5,4 +5,6 @@ extern char* customBoardParameters;
 
 void showListOfCommands();
 void customBoard(int, char**);
+void autoPlayCommand(int, char**, char*);
+
 #endif

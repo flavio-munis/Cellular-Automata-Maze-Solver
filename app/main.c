@@ -45,6 +45,11 @@ void identifyArguments(int parametersSize, char* parameters[]) {
 		customBoard(parametersSize, parameters);
 	else if(strcmp(command, "-h") == 0)
 		showListOfCommands();
-	else
+	else if(strcmp(command, "autoplay") == 0){
+		if(parametersSize == 6)
+			autoPlayCommand(parametersSize, parameters, parameters[3]);
+		else
+			autoPlayCommand(parametersSize, parameters, TEMPLATE_BOARD);
+	} else
 		invalidCommandError();
 }

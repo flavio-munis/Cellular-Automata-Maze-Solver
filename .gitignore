@@ -12,3 +12,6 @@ boards/test*
 
 # Results Files
 results/*
+
+# Core Dump Files
+core.*
