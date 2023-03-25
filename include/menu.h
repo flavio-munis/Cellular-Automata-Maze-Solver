@@ -5,5 +5,6 @@
 
 void playGame(Board*);
 void printBoard(Board*);
+void printNextMoviments(Board*);
 
 #endif

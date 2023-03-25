@@ -1,5 +1,12 @@
+/* 
+
+   Current Solution takes O(4^n), where n equals the depth used to calculate movements ahead.
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include "menu.h"
 #include "board.h"
@@ -54,6 +61,16 @@ double distanceToFinish(Board* currentBoard) {
 	return sqrt(pow((sizeCol - playerPositionX), 2.0) + pow((sizeRow - playerPositionY), 2.0));	
 }
 
+// Auxiliar function that discover if player can win in the next move
+static inline bool gameWonNextMove(NextMoves* nextMovements) {
+	return (nextMovements -> up == GAME_WON || nextMovements -> down == GAME_WON || nextMovements -> right == GAME_WON || nextMovements -> left == GAME_WON);
+}
+
+// Auxiliar functiona that returns if a player is gonna be traped in the next move
+static inline bool gameOverNextMove(NextMoves* nextMovements) {
+	return (nextMovements -> up == GAME_OVER && nextMovements -> down == GAME_OVER && nextMovements -> right == GAME_OVER && nextMovements -> left == GAME_OVER);
+}
+
 Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* leftInfo, Info* rightInfo) {
 
 	double currentDistance = distanceToFinish(currentInfo -> currentBoard);
@@ -61,66 +78,111 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 	double distanceDown;
 	double distanceLeft;
 	double distanceRight;
-	double biggerDistance = currentDistance;
+	double smallestDistance = currentDistance;
 	Info* result = currentInfo;
+	NextMoves* nextMovements;
 	
 	if(upInfo) {
 
-		if(playerHasWon(upInfo -> currentBoard))
+		nextMovements = getNextMoviments(upInfo -> currentBoard);
+
+		if(gameWonNextMove(nextMovements)){
+			free(nextMovements);
 			return copyInfo(upInfo);
-		
-		distanceUp = distanceToFinish(upInfo -> currentBoard);
-		result = (biggerDistance > distanceUp) ? upInfo : result;
-	}
+		} else if(!gameOverNextMove(nextMovements)) {
+			distanceUp = distanceToFinish(upInfo -> currentBoard);
+
+			if(smallestDistance > distanceUp) {
+				result = upInfo;
+				smallestDistance = distanceUp;
+			}
+		} else {
+			printf("Game Over Up!\n\n");
+		}
+
+		free(nextMovements);
+}
 		
 	if(downInfo) {
 
-		if(playerHasWon(downInfo -> currentBoard))
-			return copyInfo(downInfo);
+		nextMovements = getNextMoviments(downInfo -> currentBoard);
 		
-		distanceDown = distanceToFinish(downInfo -> currentBoard);
-		result = (biggerDistance > distanceDown) ? downInfo : result;
+		if(gameWonNextMove(nextMovements))
+			return copyInfo(downInfo);
+		else if(!gameOverNextMove(nextMovements)){
+			distanceDown = distanceToFinish(downInfo -> currentBoard);
+
+			if(smallestDistance > distanceDown) {
+				result = downInfo;
+				smallestDistance = distanceDown;
+			}
+		} else {
+			printf("Game Over Down!\n\n");
+		}
+
+		free(nextMovements);
 	}
 
 	if(leftInfo) {
 
-		if(playerHasWon(leftInfo -> currentBoard))
+		nextMovements = getNextMoviments(leftInfo -> currentBoard);
+
+		if(gameWonNextMove(nextMovements))
 			return copyInfo(leftInfo);
-		
-		distanceLeft = distanceToFinish(leftInfo -> currentBoard);
-		result = (biggerDistance > distanceLeft) ? leftInfo : result;
+		else if(!gameOverNextMove(nextMovements)){
+			distanceLeft = distanceToFinish(leftInfo -> currentBoard);
+
+			if(smallestDistance > distanceLeft) {
+				result = leftInfo;
+				smallestDistance = distanceLeft;
+			}
+		} else {
+			printf("Game Over Left!\n\n");
+		}
+
+		free(nextMovements);
 	}
 
 	if(rightInfo) {
 
-		if(playerHasWon(rightInfo -> currentBoard))
+		nextMovements = getNextMoviments(rightInfo -> currentBoard);
+
+		if(gameWonNextMove(nextMovements))
 			return copyInfo(rightInfo);
-		
-		distanceRight = distanceToFinish(rightInfo -> currentBoard);
-		result = (biggerDistance > distanceRight) ? rightInfo : result;
+		else if(!gameOverNextMove(nextMovements)){
+			distanceRight = distanceToFinish(rightInfo -> currentBoard);
+
+			if(smallestDistance > distanceRight) {
+				result = rightInfo;
+				smallestDistance = distanceRight;
+			}
+		} else {
+			printf("Game Over Right!\n\n");
+		}
+
+		free(nextMovements);
 	}
 
 	if(result == currentInfo) {
-
-		if(upInfo)
+		if(upInfo && distanceUp)
 			if(upInfo -> moviments -> totalElements > result -> moviments -> totalElements)
 				result = upInfo;
 
-		if(downInfo)
+		if(downInfo && distanceDown)
 			if(downInfo -> moviments -> totalElements > result -> moviments -> totalElements)
 				result = downInfo;
 
-		if(leftInfo)
+		if(leftInfo && distanceLeft)
 			if(leftInfo -> moviments -> totalElements > result -> moviments -> totalElements)
 				result = leftInfo;
 
-		if(rightInfo)
+		if(rightInfo && distanceRight)
 			if(rightInfo -> moviments -> totalElements > result -> moviments -> totalElements)
 				result = rightInfo;
-		
 	}
-
-	/*if(currentInfo)
+	
+	/*
+	if(currentInfo)
 		printf("Current Board Distance: %.2f\n", distanceToFinish(currentInfo -> currentBoard));
 
 	if(upInfo)
@@ -137,7 +199,7 @@ Info* closerToFinish(Info* currentInfo, Info* upInfo, Info* downInfo, Info* left
 
 	puts("");*/
 	
-	return copyInfo(result);
+	return result;
 }
 
 Info* discoverOptimalPath(Info* currentInfo, int depth) {
@@ -207,18 +269,18 @@ Info* discoverOptimalPath(Info* currentInfo, int depth) {
 
 		result = closerToFinish(currentInfo, upInfo, downInfo, leftInfo, rightInfo);
 			
-		if(upInfo)
+		if(upInfo && upInfo != result)
 			freeInfo(upInfo);
 
-		if(downInfo)
+		if(downInfo && downInfo != result)
 			freeInfo(downInfo);
 
-		if(leftInfo)
+		if(leftInfo && leftInfo != result)
 			freeInfo(leftInfo);
 
-		if(rightInfo)
+		if(rightInfo && rightInfo != result)
 			freeInfo(rightInfo);
-
+		
 		return result;
 	}
 }
@@ -233,12 +295,28 @@ void autoPlay(Board* currentBoard, int depth) {
 	
 	while(!gameOver(currentInfo -> currentBoard) && !playerHasWon(currentInfo -> currentBoard)) {
 		result = discoverOptimalPath(currentInfo, depth);
+
+		if(result -> moviments -> totalElements <= currentInfo -> moviments -> totalElements) {
+
+			printf("Moviments: ");
+			printMoviments(result -> moviments);
+			printf("Total Elements:%ld\n", result -> moviments -> totalElements);
+
+			printf("\nMoviments: ");
+			printMoviments(currentInfo -> moviments);
+
+			puts("");
+			
+			printNextMoviments(currentInfo -> currentBoard);
+			
+			exit(1);
+	   }
 		newMoviment = result -> moviments -> moves[currentInfo -> moviments -> totalElements];
 
-		printf("Moviments: ");
+        printf("Moviments: ");
 		printMoviments(result -> moviments);
 		printf("Total Elements:%ld\n", result -> moviments -> totalElements);
-	
+		
 		playerCoordinates = playerNewPosition(currentInfo -> currentBoard, newMoviment);
 		addToMovimentVec(currentInfo -> moviments, newMoviment);
 		updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
@@ -246,10 +324,12 @@ void autoPlay(Board* currentBoard, int depth) {
 		free(playerCoordinates);
 		freeInfo(result);
 					 
-		printBoard(currentInfo -> currentBoard);
-		printf("Moviments: ");
+		//printBoard(currentInfo -> currentBoard);
+		printf("\nMoviments: ");
 		printMoviments(currentInfo -> moviments);
 		printf("\nCurrent Distance to Finish: %.2f\n\n",distanceToFinish(currentInfo -> currentBoard));
+		printNextMoviments(currentInfo -> currentBoard);
+		puts("");
 	}
 	
 	if(gameOver(currentInfo -> currentBoard))

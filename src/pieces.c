@@ -5,16 +5,16 @@
 #include "error_handler.h"
 
 // Creates a new piece and config it's attributes
-Piece* createPiece(enum PieceType type, enum PieceState state) {
-
-	Piece* newPiece = (Piece*) malloc(sizeof(Piece));
-	checkNullPointer((void*) newPiece);
-	
-	newPiece -> type = type;
-	newPiece -> state = state;
-
-	return newPiece;
+void configPiece(Piece* currentPiece, enum PieceType type, enum PieceState state) {
+	currentPiece -> type = type;
+	currentPiece -> state = state;
 }
+
+// Copies all piece information to a new instance
+//Piece* copyPiece(Piece* currentPiece) {
+//	Piece* newPiece = createPiece(currentPiece -> type, currentPiece -> state);
+//	return newPiece;
+//}
 
 // Find the type of the current piece in the board
 enum PieceType findType(int i, int j, int sizeRowAcess, int sizeColAcess) {

@@ -6,6 +6,24 @@
 #include "file_handler.h"
 #include "error_handler.h"
 
+// Allocates memory for a new piece matrix
+Piece** createPieceMatrix(int sizeRow, int sizeCol) {
+	Piece** newMatrix = malloc(sizeRow * sizeof(Piece*));
+	checkNullPointer((void*) newMatrix);
+	
+	for(int i = 0; i < sizeRow; i++) {
+
+		newMatrix[i] = malloc(sizeCol * sizeof(Piece));
+		checkNullPointer((void*) newMatrix[i]);
+		
+		for(int j = 0; j < sizeCol; j++){
+			configPiece(&newMatrix[i][j], findType(i, j, sizeRow - 1, sizeCol - 1), findState(i, j, sizeRow - 1, sizeCol - 1));
+		}
+	}
+
+	return newMatrix;
+}
+
 // Creates a new Board with dynamic size
 Board* createBoard(int sizeRow, int sizeCol) {
 
@@ -22,21 +40,8 @@ Board* createBoard(int sizeRow, int sizeCol) {
 	newBoard -> sizeCol = sizeCol;
 	newBoard -> sizeRow = sizeRow;
 	newBoard -> player = newPlayer;
-	newBoard -> pieces = (Piece**) malloc(sizeRow * sizeof(Piece));
-	checkNullPointer((void*) newBoard -> pieces);
+	newBoard -> pieces = createPieceMatrix(sizeRow, sizeCol);
 	
-	for(int i = 0; i < sizeRow; i++) {
-
-		// Allocates memory for each row
-		newBoard -> pieces[i] = (Piece*) malloc(sizeCol * sizeof(Piece));
-		checkNullPointer((void*) newBoard -> pieces[i]);
-		
-		// Adds all pieces to the 
-		for(int j = 0; j < sizeCol; j++) {
-			newBoard -> pieces[i][j] = *createPiece(findType(i,j,sizeRow - 1,sizeCol - 1), findState(i,j,sizeRow - 1, sizeCol - 1));
-		}
-	}
-		   
 	return newBoard;
 }
 
@@ -139,7 +144,6 @@ void debugBoard(Board* currentBoard) {
    
    0 - Piece is Dead
    1 - Piece is Alive
-   2 - Player
    3 - START
    4 - FINISH
 
@@ -148,7 +152,6 @@ Board* createCustomBoard(char* boardConfig, int sizeRow, int sizeCol) {
 
 	Board* newBoard = createBoard(sizeRow, sizeCol);
 	Piece** boardPieces = newBoard -> pieces;
-	Player* currentPlayer = &newBoard -> player;
 	int** pseudoBoard = readBoardFromFile(boardConfig, sizeRow, sizeCol);
 	
 	for(int i = 0; i < sizeRow; i++) {
@@ -162,11 +165,6 @@ Board* createCustomBoard(char* boardConfig, int sizeRow, int sizeCol) {
 				
 				case 1:
 					boardPieces[i][j].state = ALIVE;
-					break;
-				
-			    case 2:
-					currentPlayer -> coordinate[0] = j;
-					currentPlayer -> coordinate[1] = i;
 					break;
 
 				case 3:
@@ -358,6 +356,18 @@ void updatePlayerPosition(Player* currentPlayer, int playerNewPositionX, int pla
 	currentPlayer -> coordinate[1] = playerNewPositionY;
 }
 
+// Copies piece configuration, creates a new 
+Piece** copyBoardPieces(Piece** boardPieces, int sizeRow, int sizeCol) {
+
+	Piece** newPieceMatrix = createPieceMatrix(sizeRow, sizeCol);
+
+	for(int i = 0; i < sizeRow; i++)
+		for(int j = 0; j < sizeCol; j++)
+			newPieceMatrix[i][j] = boardPieces[i][j];
+
+	return newPieceMatrix;
+}
+
 // Updates current board information
 void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPositionY) {
 
@@ -365,15 +375,14 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 	int sizeCol = currentBoard -> sizeCol;
 	Player* currentPlayer = &currentBoard -> player;
 	Piece** boardPieces = currentBoard -> pieces;
-	Board* auxBoard = createBoard(sizeRow,sizeCol);
-	Piece** auxBoardPieces = auxBoard -> pieces;
+	Board* auxBoard = copyBoard(currentBoard);
 
 	updatePlayerPosition(currentPlayer, playerNewPositionX, playerNewPositionY);
 	
 	for(int i = 0; i < sizeRow; i++) {
 		for(int j = 0; j < sizeCol; j++) {
 			
-			int neighboursAlive = checkNeighbours(currentBoard, i, j);
+			int neighboursAlive = checkNeighbours(auxBoard, i, j);
 			
 			switch(boardPieces[i][j].type) {
 
@@ -384,10 +393,10 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 					
 					// Corner pieces don't have enough neighbours to stay alive
 					if(boardPieces[i][j].state == ALIVE)
-						auxBoardPieces[i][j].state = DEAD;
+						currentBoard -> pieces[i][j].state = DEAD;
 					else {
 						if(neighboursAlive > 1)
-							auxBoardPieces[i][j].state = ALIVE;
+							currentBoard -> pieces[i][j].state = ALIVE;
 					}
 					break;
 
@@ -396,14 +405,14 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 					// Corner pieces don't have enough neighbours to stay alive
 					if(boardPieces[i][j].state == ALIVE) {
 						if(neighboursAlive < 4)
-							auxBoardPieces[i][j].state = DEAD;
+							currentBoard -> pieces[i][j].state = DEAD;
 						else
-							auxBoardPieces[i][j].state = ALIVE;
+							currentBoard -> pieces[i][j].state = ALIVE;
 					} else {
 						if(neighboursAlive > 1 && neighboursAlive < 5)
-							auxBoardPieces[i][j].state = ALIVE;
+							currentBoard -> pieces[i][j].state = ALIVE;
 						else
-							auxBoardPieces[i][j].state = DEAD;
+							currentBoard -> pieces[i][j].state = DEAD;
 					}
 					break;
 
@@ -412,38 +421,27 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 					// Corner pieces don't have enough neighbours to stay alive
 					if(boardPieces[i][j].state == ALIVE){
 						if(neighboursAlive < 4 || neighboursAlive > 5)
-							auxBoardPieces[i][j].state = DEAD;
+							currentBoard -> pieces[i][j].state = DEAD;
 						else
-							auxBoardPieces[i][j].state = ALIVE;
+							currentBoard -> pieces[i][j].state = ALIVE;
 					} else {
 						if(neighboursAlive > 1 && neighboursAlive < 5)
-							auxBoardPieces[i][j].state = ALIVE;
+							currentBoard -> pieces[i][j].state = ALIVE;
 						else
-							auxBoardPieces[i][j].state = DEAD;
+							currentBoard -> pieces[i][j].state = DEAD;
 					}
 					break;
 			}
 		}
 	}
 
-	// Free the original piece matrix
-	for(int i = 0; i < sizeRow; i++)
-		free(boardPieces[i]);
-	free(boardPieces);
-
-	// Makes the board pieces matrix points to the auxiliar one created on this functions
-	currentBoard -> pieces = auxBoardPieces;
-
-	// Free the auxiliar Board
-	free(auxBoard);
+	freeBoard(auxBoard);
 }
 
 // Frees all memory used by board struct
 void freeBoard(Board* currentBoard) {
-
 	for(int i = 0; i < currentBoard -> sizeRow; i++)
 		free(currentBoard -> pieces[i]);
-		
 	free(currentBoard -> pieces);
 	free(currentBoard);
 }

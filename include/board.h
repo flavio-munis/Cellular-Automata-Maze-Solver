@@ -5,12 +5,12 @@
 #include "pieces.h"
 
 typedef struct player {
-	int coordinate[2];
+	int8_t coordinate[2];
 } Player;
 
 typedef struct board {
-	int sizeCol;
-	int sizeRow;
+	int8_t sizeCol;
+	int8_t sizeRow;
 	Piece** pieces;
 	Player player;
 } Board;

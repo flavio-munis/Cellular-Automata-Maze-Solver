@@ -19,7 +19,8 @@ typedef struct piece {
 	enum PieceState state;
 } Piece;
 
-Piece* createPiece(enum PieceType, enum PieceState);
+void configPiece(Piece*, enum PieceType, enum PieceState);
+//Piece* copyPiece
 enum PieceType findType(int, int, int, int);
 enum PieceState findState(int, int, int, int);
 
