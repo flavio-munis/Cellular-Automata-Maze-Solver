@@ -135,7 +135,9 @@ void playGame(Board* currentBoard) {
 		printDirections(moviments);
 		
 		puts("");
-			
+
+		debugBoard(currentBoard);
+		
 		printf("\nNext Move[w/a/s/d]: ");
 		direction = getchar();
 
@@ -153,6 +155,9 @@ void playGame(Board* currentBoard) {
 			}
 		}
 	}
+
+	cleanTerminal();
+	debugBoard(currentBoard);
 
 	if(gameOver(currentBoard))
 		printf("\nYou Lost :(\n");

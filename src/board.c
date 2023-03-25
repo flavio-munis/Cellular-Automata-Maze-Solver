@@ -386,7 +386,7 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 					if(boardPieces[i][j].state == ALIVE)
 						auxBoardPieces[i][j].state = DEAD;
 					else {
-						if(neighboursAlive > 2)
+						if(neighboursAlive > 1)
 							auxBoardPieces[i][j].state = ALIVE;
 					}
 					break;
@@ -400,7 +400,7 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 						else
 							auxBoardPieces[i][j].state = ALIVE;
 					} else {
-						if(neighboursAlive == 2 || neighboursAlive == 3)
+						if(neighboursAlive > 1 && neighboursAlive < 5)
 							auxBoardPieces[i][j].state = ALIVE;
 						else
 							auxBoardPieces[i][j].state = DEAD;
@@ -411,12 +411,12 @@ void updateBoard(Board* currentBoard, int playerNewPositionX, int playerNewPosit
 
 					// Corner pieces don't have enough neighbours to stay alive
 					if(boardPieces[i][j].state == ALIVE){
-						if(neighboursAlive < 4 || neighboursAlive > 6)
+						if(neighboursAlive < 4 || neighboursAlive > 5)
 							auxBoardPieces[i][j].state = DEAD;
 						else
 							auxBoardPieces[i][j].state = ALIVE;
-					} else{
-						if(neighboursAlive == 2 || neighboursAlive == 3)
+					} else {
+						if(neighboursAlive > 1 && neighboursAlive < 5)
 							auxBoardPieces[i][j].state = ALIVE;
 						else
 							auxBoardPieces[i][j].state = DEAD;

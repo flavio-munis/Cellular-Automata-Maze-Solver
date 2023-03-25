@@ -166,13 +166,13 @@ enum MovimentStates getNextMovimentsAux(enum PieceState pieceState, int neighbou
 			return GAME_WON;
 
 	    case DEAD:
-			if(neighboursAlive == 2 || neighboursAlive == 3)
+			if(neighboursAlive > 1 && neighboursAlive < 5)
 				return GAME_OVER;
 			else
 				return OKAY;
 
 	    case ALIVE:
-			if(neighboursAlive >= 4 && neighboursAlive < 7)
+			if(neighboursAlive > 3 && neighboursAlive < 6)
 				return GAME_OVER;
 			else
 				return OKAY;
