@@ -11,8 +11,8 @@ typedef struct info {
 
 typedef struct paths {
 	Info* currentInfo;
-	int distToFinish;
-	int totalElements;
+	float distToFinish;
+	int8_t totalElements;
 	struct paths* next;
 } Paths;
 

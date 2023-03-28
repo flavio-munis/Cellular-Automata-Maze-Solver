@@ -26,7 +26,7 @@ C_HEADERS = $(wildcard ${INCLUDE}/*.h)
 C_SOURCE = $(wildcard ${SRC}/*.c)
 OBJ_SOURCE = $(subst .c,.o,$(subst $(SRC),$(OBJ), $(C_SOURCE)))
 
-all: ${OBJ} $(PROJECT_NAME) $(RESULTS) project_descrip
+all: ${OBJ} $(PROJECT_NAME) $(RESULTS) project_descrip set_threads
 
 $(RESULTS):
 	@ mkdir results
@@ -38,12 +38,12 @@ $(OBJ):
 
 $(PROJECT_NAME): $(OBJ_SOURCE) $(MAIN_OBJ)
 	@ echo 'Compiling Executable File...'
-	@ $(CC) $^ -lm -o $@ -O2
+	@ $(CC) $^ -lm -o $@ -O3 -fopenmp
 	@ echo 'Finished Building Project!'
 
 $(OBJ)/%.o: $(SRC)/%.c $(INCLUDE)/%.h
 	@ echo 'Building and Linking File: $@'
-	@ $(CC) $< $(CC_FLAGS) $@
+	@ $(CC) $< $(CC_FLAGS) $@ -fopenmp -O3
 	@ echo ' '
 
 $(OBJ)/main.o: $(APP)/main.c
@@ -81,3 +81,6 @@ project_descrip:
 	@ echo ''
 	@ echo 'Had a lot of fun (and hate) moments building this program, really was a opportunity to develop my C programming skills, hope you have fun and remenber that the project is always open for advices and bug fixes :)'
 	@ echo ''
+
+set_threads:
+	@ export OMP_NUM_THREADS="5"
