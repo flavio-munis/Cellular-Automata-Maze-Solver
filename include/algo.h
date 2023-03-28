@@ -9,6 +9,13 @@ typedef struct info {
 	Board* currentBoard;
 } Info;
 
+typedef struct paths {
+	Info* currentInfo;
+	int distToFinish;
+	int totalElements;
+	struct paths* next;
+} Paths;
+
 void autoPlay(Board*, int);
 
 #endif
