@@ -45,10 +45,13 @@ Info* copyInfo(Info* currentInfo) {
 }
 
 // Frees all memory allocated to info struct
-void freeInfo(Info* currentInfo) {
-	freeBoard(currentInfo -> currentBoard);
-	freeMovimentVec(currentInfo -> moviments);
-	free(currentInfo);
+void freeInfo(Info** currentInfo) {
+	
+	freeBoard((*currentInfo) -> currentBoard);
+	freeMovimentVec((*currentInfo) -> moviments);
+	free(*currentInfo);
+	
+	*currentInfo = NULL;
 }
 
 // Initiate the distance table used for memoization
@@ -148,7 +151,7 @@ void freePathsHead(Paths** head) {
 	else
 		nextNode = aux -> next;
 
-	freeInfo(aux -> currentInfo);
+	freeInfo(&aux -> currentInfo);
 	free(*head);
 
 	*head = nextNode;
@@ -161,7 +164,7 @@ void freePaths(Paths** head) {
 	
 	while(aux) {
 		nextNode = aux -> next;
-		freeInfo(aux -> currentInfo);
+		freeInfo(&aux -> currentInfo);
 		free(aux);
 		aux = nextNode;
 	}
@@ -285,7 +288,7 @@ void addPath(Paths** head, Info* currentInfo) {
 					}
 					
 				} else {
-					freeInfo(currentInfo);
+					freeInfo(&currentInfo);
 					free(newPath);
 				}
 			} //else
@@ -296,111 +299,123 @@ void addPath(Paths** head, Info* currentInfo) {
 			newPath -> totalElements++;
 		}
 	} else
-		freeInfo(currentInfo);
+		freeInfo(&currentInfo);
 
 	free(nextMoviments);
 }
-
+	
 // First call to search for paths, discovers all possibles paths recursivily and adds it to the list
 void firstSearch(Paths** newPaths, Info* currentInfo, int depth) {
 	
 	if(depth == 0){
 		addPath(newPaths, copyInfo(currentInfo));
 	} else {
-		Info* newInfo = NULL;
 		NextMoves* nextUpdate = getNextMoviments(currentInfo -> currentBoard);
 		
-		if(playerHasWon(currentInfo -> currentBoard)) {
+		if(playerHasWon(currentInfo -> currentBoard))
 			addPath(newPaths, copyInfo(currentInfo));
-			freeInfo(currentInfo);
-		}
 
-		if(nextUpdate -> up != IMPOSSIBLE && nextUpdate -> up != GAME_OVER) {
-			Info* newInfoUp = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoUp, UP);
+        #pragma omp parallel
+		{
 
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch(newPaths, newInfoUp, depth - 1);
+            #pragma omp single
+			{
+				if(nextUpdate -> up != IMPOSSIBLE && nextUpdate -> up != GAME_OVER) {
 
-			if(newInfoUp)
-				freeInfo(newInfoUp);
-		} else if(nextUpdate -> up == GAME_WON) {
-			newInfo = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfo, UP);
-			addPath(newPaths, copyInfo(newInfo));
-			freeInfo(newInfo);
-		}
+#pragma omp task //private(newInfoUp)
+					{
+						Info* newInfoUp = copyInfo(currentInfo);
+						auxDiscoverOptimalPath(newInfoUp, UP);
+					
+						//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
+						firstSearch(newPaths, newInfoUp, depth - 1);
 
-		if(nextUpdate -> down != IMPOSSIBLE && nextUpdate -> down != GAME_OVER) {
-			Info* newInfoDown = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoDown, DOWN);
+						if(newInfoUp) {
+							freeInfo(&newInfoUp);
+						}
+					}
+				}
 
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch(newPaths, newInfoDown, depth - 1);
+				if(nextUpdate -> down != IMPOSSIBLE && nextUpdate -> down != GAME_OVER) {
+
+#pragma omp task //private(newInfoDown)
+					{
+						Info* newInfoDown = copyInfo(currentInfo);
+						auxDiscoverOptimalPath(newInfoDown, DOWN);
+
+						//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
+						firstSearch(newPaths, newInfoDown, depth - 1);
+
+						if(newInfoDown){
+							freeInfo(&newInfoDown);
+							//puts("Free Memory From Down Branch");
+						}
+					}
+				}
 				
-			if(newInfoDown)
-				freeInfo(newInfoDown);
-		} else if(nextUpdate -> down == GAME_WON) {
-			newInfo = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfo, DOWN);
-			addPath(newPaths, copyInfo(newInfo));
-			freeInfo(newInfo);
+				if(nextUpdate -> left != IMPOSSIBLE && nextUpdate -> left != GAME_OVER) {
+
+#pragma omp task //private(newInfoLeft)
+					{
+						Info* newInfoLeft = copyInfo(currentInfo);
+						auxDiscoverOptimalPath(newInfoLeft, LEFT);
+
+						//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
+						firstSearch(newPaths, newInfoLeft, depth - 1);
+
+						if(newInfoLeft){
+							freeInfo(&newInfoLeft);
+							//puts("Free Memory From Left Branch");
+						}
+					}
+				}
+
+				if(nextUpdate -> right != IMPOSSIBLE && nextUpdate -> right != GAME_OVER) {
+
+#pragma omp task //private(newInfoRight)
+					{
+						Info* newInfoRight = copyInfo(currentInfo);
+						auxDiscoverOptimalPath(newInfoRight, RIGHT);
+
+						//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
+						firstSearch(newPaths, newInfoRight, depth - 1);
+
+						if(newInfoRight){
+							freeInfo(&newInfoRight);
+							//puts("Free Memory From Right Branch");
+						}
+					}
+				}
+				
+				free(nextUpdate);
+			}
 		}
-
-		if(nextUpdate -> left != IMPOSSIBLE && nextUpdate -> left != GAME_OVER) {
-			Info* newInfoLeft = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoLeft, LEFT);
-
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch(newPaths, newInfoLeft, depth - 1);
-			
-			if(newInfoLeft)
-				freeInfo(newInfoLeft);
-		} else if(nextUpdate -> left == GAME_WON) {
-			newInfo = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfo, LEFT);
-			addPath(newPaths, copyInfo(newInfo));
-			freeInfo(newInfo);
-		}
-		
-		if(nextUpdate -> right != IMPOSSIBLE && nextUpdate -> right != GAME_OVER) {
-			Info* newInfoRight = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoRight, RIGHT);
-
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch(newPaths, newInfoRight, depth - 1);
-
-			if(newInfoRight)
-				freeInfo(newInfoRight);
-		} else if(nextUpdate -> up == GAME_WON) {
-			newInfo = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfo, RIGHT);
-			addPath(newPaths, copyInfo(newInfo));
-			freeInfo(newInfo);
-		}
-		free(nextUpdate);
 	}
+}
+
+int countNodes(Paths* head) {
+
+	int result = 0;
+	Paths* aux = head;
+	
+	while(aux) {
+		aux = aux -> next;
+		result++;
+	}
+
+	return result;
 }
 
 // Continue searching for an win path but now with the result of the previous searchs
 void continuosSearch(Paths** prevResults, Paths** newPaths, int depth) {
 
 	Paths* auxPrevResults = *prevResults;
-	int totalSize = auxPrevResults -> totalElements;
-
-    #pragma omp parallel private(auxPrevResults)
-	{
-		auxPrevResults = *prevResults;
-		
-        #pragma omp for
-		for(int i = 0; i < totalSize; i++)/*(auxPrevResults)*/ {
+	
+	while(auxPrevResults) {
 			
-			firstSearch(newPaths, auxPrevResults -> currentInfo, depth);
+		firstSearch(newPaths, auxPrevResults -> currentInfo, depth);
 		 
-			auxPrevResults = auxPrevResults -> next;
-		}
-
-		printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
+		auxPrevResults = auxPrevResults -> next;
 	}
 }
 
@@ -422,13 +437,15 @@ void autoPlay(Board* currentBoard, int depth) {
 	Info* currentInfo = createInfo(currentBoard, moviments);
 	Paths* head = NULL;
 	Paths* results = NULL;
+
+	/*int* playerPosition;
+	size_t currentIndex; 
+	enum MovimentType newMoviment;*/
 	
 	initDistanceTable(currentBoard -> sizeRow, currentBoard -> sizeCol);
 
-    //#pragma omp parallel
-	//{
 	firstSearch(&results, copyInfo(currentInfo), depth);
-		//
+	
 	printf("\nMoviments: ");
 	printMoviments(results -> currentInfo -> moviments);
 	printf("Total Elements in Moviment Vec: %ld\n", results -> currentInfo -> moviments -> totalElements);
@@ -441,6 +458,7 @@ void autoPlay(Board* currentBoard, int depth) {
 
 		if(!head){
 			printNextMoviments(currentInfo -> currentBoard);
+			puts("");
 			break;
 		}
 		
@@ -452,8 +470,8 @@ void autoPlay(Board* currentBoard, int depth) {
 		printMoviments(results -> currentInfo -> moviments);
 		printf("Total Elements in Moviment Vec: %ld\n", results -> currentInfo -> moviments -> totalElements);
 		printf("Total Elements in LinkedList: %d\n\n", results -> totalElements);
-
-		free(currentInfo);
+		
+		freeInfo(&currentInfo);
 		currentInfo = copyInfo(results -> currentInfo);
 	}
 	
@@ -467,8 +485,11 @@ void autoPlay(Board* currentBoard, int depth) {
 		saveBoardInfo(currentInfo -> moviments);
 	} else
 		deadEndPath();
-	
+
+	//printf("Is currentInfo Pointer Null? %s\n", (currentInfo) ? "No" : "Yes");
 
 	free(distanceTable);
-	freeInfo(currentInfo);
+	freeInfo(&currentInfo);
+
+	//printf("Is currentInfo Pointer Null? %s\n", (currentInfo) ? "No" : "Yes");
 }
