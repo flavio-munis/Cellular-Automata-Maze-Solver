@@ -47,7 +47,7 @@ char* createFileName() {
 	time_t currentTime;
 	time(&currentTime);
 	char* currentTimeString = ctime(&currentTime);
-	char* fileName = calloc(32,sizeof(char));
+	char* fileName = calloc(64,sizeof(char));
 
 	checkNullPointer((void*) fileName);
 
