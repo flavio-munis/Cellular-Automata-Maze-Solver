@@ -39,6 +39,7 @@ MovimentVec* initMovimentVec();
 void addToMovimentVec(MovimentVec*, enum MovimentType);
 void freeMovimentVec(MovimentVec*);
 MovimentVec* copyMovimentVec(MovimentVec*);
+bool compareMovimentVecs(MovimentVec*, MovimentVec*);
 int* playerNewPosition(Board*, enum MovimentType);
 void printMoviments(MovimentVec*);
 void solveBoard(Board*, MovimentVec*);

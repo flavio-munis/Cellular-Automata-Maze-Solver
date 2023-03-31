@@ -12,9 +12,16 @@ typedef struct info {
 typedef struct paths {
 	Info* currentInfo;
 	float distToFinish;
-	int8_t totalElements;
+	float score;
+	int totalElements;
 	struct paths* next;
 } Paths;
+
+typedef struct pathsTable {
+	float score;
+	MovimentVec* moviments;
+	struct pathsTable* next;
+} PathsTable;
 
 void autoPlay(Board*, int);
 

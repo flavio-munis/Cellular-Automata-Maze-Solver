@@ -148,6 +148,23 @@ MovimentVec* copyMovimentVec(MovimentVec* moviments) {
 	return newMoviments;
 }
 
+// Compares if two vectors contain the same moviments
+bool compareMovimentVecs(MovimentVec* vec1, MovimentVec* vec2) {
+
+	size_t vec1TotalElements = vec1 -> totalElements;
+	size_t vec2TotalElements = vec2 -> totalElements;
+	
+	if(!(vec1TotalElements == vec2TotalElements))
+		return false;
+
+	for(int i = 0; i < vec1TotalElements; i++) {
+		if(vec1 -> moves[i] != vec2 -> moves[i])
+			return false;
+	}
+
+	return true;
+}
+
 // Print all elements presents in the moviments vector
 void printMoviments(MovimentVec* moviments) {
 	for(int i = 0; i < moviments -> totalElements; i++)

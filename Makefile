@@ -38,7 +38,7 @@ $(OBJ):
 
 $(PROJECT_NAME): $(OBJ_SOURCE) $(MAIN_OBJ)
 	@ echo 'Compiling Executable File...'
-	@ $(CC) $^ -lm -o $@ -O3 -fopenmp
+	@ $(CC) $^ -lm -o $@ -fopenmp -O3
 	@ echo 'Finished Building Project!'
 
 $(OBJ)/%.o: $(SRC)/%.c $(INCLUDE)/%.h
