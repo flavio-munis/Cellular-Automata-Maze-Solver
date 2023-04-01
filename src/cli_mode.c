@@ -17,7 +17,7 @@ char* customBoardParameters = "./executable_file custom-board [path_to_custom_bo
 
 char* autoPlayParameters = "./executable_file autoplay [depth] [optional: path_to_custom_board_file] [optional: rows] [optional: columns]";
 
-char* checkSolutionParameters = "./executable_file autosolve [path_to_solution_file] [optional: path_to_custom_board_file] [optional: rows] [optional: columns]";
+char* checkSolutionParameters = "./executable_file check-solution [path_to_solution_file] [optional: path_to_custom_board_file] [optional: rows] [optional: columns]";
 
 // Checks if a given string only has numbers
 bool digitsOnly(char *s) {

@@ -9,7 +9,6 @@ CC_FLAGS =  -c \
 	-I $(INCLUDE) \
 	-Wall \
 	-pedantic \
-	-g \
 	-o
 
 # Folders
@@ -26,7 +25,7 @@ C_HEADERS = $(wildcard ${INCLUDE}/*.h)
 C_SOURCE = $(wildcard ${SRC}/*.c)
 OBJ_SOURCE = $(subst .c,.o,$(subst $(SRC),$(OBJ), $(C_SOURCE)))
 
-all: ${OBJ} $(PROJECT_NAME) $(RESULTS) project_descrip set_threads
+all: ${OBJ} $(PROJECT_NAME) $(RESULTS) project_descrip
 
 $(RESULTS):
 	@ mkdir results
@@ -77,10 +76,7 @@ project_descrip:
 	@ echo 'To run this program in gameplay mode just execute the binary.'
 	@ echo 'For more info on cli commands please execute the binary using the -h command.'
 	@ echo ' '
-	@ echo 'Current solution to problem was made using depth=5 using the autoplay command. Algorithm still in beta and not fully optimized or free from bugs'
+	@ echo 'Algorithm still in beta and not fully optimized or free from bugs'
 	@ echo ''
 	@ echo 'Had a lot of fun (and hate) moments building this program, really was a opportunity to develop my C programming skills, hope you have fun and remenber that the project is always open for advices and bug fixes :)'
 	@ echo ''
-
-set_threads:
-	@ export OMP_NUM_THREADS="5"

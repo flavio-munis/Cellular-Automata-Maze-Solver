@@ -10,8 +10,8 @@
 #include "file_handler.h"
 #include "algo.h"
 
-#define MAX_PATHS 10
-#define MAX_GAMES 1000000
+#define MAX_PATHS 3
+#define MAX_GAMES 10000
 
 // Global variables used for memoization
 double* distanceTable;
@@ -51,19 +51,6 @@ void addToPathTable(MovimentVec* moviments, float playerDist, float score) {
 		aux -> next = newNode;
 	}
 }
-
-// Prints paths table
-/*void printPathTable() {
-
-	PathsTable* aux = pathsMemo;
-
-	while(aux) {
-		printMoviments(aux -> moviments);
-		printf("Score: %f\n\n", aux -> score);
- 
-		aux = aux -> next;
-	}	
-	}*/
 
 // Free all nodes from paths table
 void freePathTable(Board* defaultBoard) {
@@ -200,9 +187,9 @@ static inline bool gameOverNextMove(NextMoves* nextMoviments) {
 
 static inline float calculateScore(float distToFinish, int validNextMoves, Piece* playerPiece) {
 
-	float score = distToFinish / (validNextMoves * 2.5);
+	float score = (distToFinish / 10) - (validNextMoves / 10);
 
-	switch(playerPiece -> type) {
+	/*switch(playerPiece -> type) {
 
 	    case CORNER:
 		    score *= 1.7;
@@ -230,7 +217,7 @@ static inline float calculateScore(float distToFinish, int validNextMoves, Piece
 	    case ALIVE:
 	    case DEAD:
 			break;
-	}
+			}*/
 	
 	return score;
 }
@@ -344,7 +331,7 @@ void addPath2(Paths** head, Info* currentInfo) {
 		
 		// If path score has already been calculated
 		if(pathNode) {
-			pathNode -> score += 0.5;
+			// pathNode -> score += 0.5;
 			newPath -> score = pathNode -> score;	
 		} else
 			addToPathTable(copyMovimentVec(currentInfo -> moviments), newPath -> distToFinish, newPath -> score);
@@ -405,69 +392,6 @@ void addPath2(Paths** head, Info* currentInfo) {
 	}
 		
 	free(nextMoviments);
-}
-
-// First call to search for paths, discovers all possibles paths recursivily and adds it to the list
-void firstSearch2(Paths** newPaths, Info* currentInfo, int depth) {
-
-	if(depth == 0){
-		addPath2(newPaths, copyInfo(currentInfo));
-	} else {
-		NextMoves* nextUpdate = getNextMoviments(currentInfo -> currentBoard);
-
-		if(playerHasWon(currentInfo -> currentBoard))
-			addPath2(newPaths, copyInfo(currentInfo));
-
-		if(nextUpdate -> up != IMPOSSIBLE && nextUpdate -> up != GAME_OVER) {
-
-			Info* newInfoUp = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoUp, UP);
-					
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch2(newPaths, newInfoUp, depth - 1);
-						
-			if(newInfoUp)
-				freeInfo(&newInfoUp);
-		}
-
-		if(nextUpdate -> down != IMPOSSIBLE && nextUpdate -> down != GAME_OVER) {
-
-			Info* newInfoDown = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoDown, DOWN);
-
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch2(newPaths, newInfoDown, depth - 1);
-
-			if(newInfoDown)
-				freeInfo(&newInfoDown);
-		}
-				
-		if(nextUpdate -> left != IMPOSSIBLE && nextUpdate -> left != GAME_OVER) {
-
-			Info* newInfoLeft = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoLeft, LEFT);
-
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch2(newPaths, newInfoLeft, depth - 1);
-
-			if(newInfoLeft)
-				freeInfo(&newInfoLeft);
-		}
-
-		if(nextUpdate -> right != IMPOSSIBLE && nextUpdate -> right != GAME_OVER) {
-
-			Info* newInfoRight = copyInfo(currentInfo);
-			auxDiscoverOptimalPath(newInfoRight, RIGHT);
-
-			//printf("Thread %d of %d\n", omp_get_thread_num(), omp_get_max_threads());
-			firstSearch2(newPaths, newInfoRight, depth - 1);
-
-			if(newInfoRight)
-				freeInfo(&newInfoRight);
-		}
-				
-		free(nextUpdate);
-	}
 }
 	
 // First call to search for paths, discovers all possibles paths recursivily and adds it to the list
@@ -597,15 +521,12 @@ Info* findPaths(Info* defaultInfo, int depth) {
 		results = NULL;
 		copyPaths(&head, &results);
 
-		//printBoard(currentInfo -> currentBoard);
 		printf("\nMoviments: ");
 		printMoviments(results -> currentInfo -> moviments);
 		printf("Current Moviments Score: %f\n", results -> score);
 		printf("Total Elements in Moviment Vec: %ld\n", results -> currentInfo -> moviments -> totalElements);
 		printf("Total Elements in LinkedList: %d\n\n", results -> totalElements);
 
-		
-		//freeInfo(&currentInfo);
 		currentInfo = copyInfo(results -> currentInfo);
 	}
 	
@@ -621,6 +542,7 @@ void autoPlay(Board* currentBoard, int depth) {
 	MovimentVec* moviments = initMovimentVec();
 	Info* defaultInfo = createInfo(currentBoard, moviments);
 	Info* currentInfo;
+	PathsTable* pathNode;
 	
 	initDistanceTable(currentBoard -> sizeRow, currentBoard -> sizeCol);
 	initPathsTable(defaultInfo -> currentBoard);
@@ -629,20 +551,22 @@ void autoPlay(Board* currentBoard, int depth) {
 
 		currentInfo = findPaths(copyInfo(defaultInfo), depth);
 		
-		if(gameOver(currentInfo -> currentBoard))
+		if(gameOver(currentInfo -> currentBoard)) {
 			printf("The Algorithm Lost The Game! :(\n");
-		else if(playerHasWon(currentInfo -> currentBoard)) {
+		} else if(playerHasWon(currentInfo -> currentBoard)) {
 			printf("The Algorithm Has Found a Correct Path! :)\n");
 			saveBoardInfo(currentInfo -> moviments);
-		} else
+			break;
+		} else{
 			printf("The Algorithm Couldn't Finish The Game! :(\n");
-			
-		//freeInfo(&currentInfo);
+			pathNode = getPathFromTable(currentInfo -> moviments, distanceToFinish(currentInfo -> currentBoard));
+			pathNode -> score += 1;
+		}
+		
+		freeInfo(&currentInfo);
 	}
 
-	//printPathTable();
-
 	free(distanceTable);
-	//freeInfo(&defaultInfo);
-	//freePathTable();
+	freePathTable(defaultInfo -> currentBoard);
+	freeInfo(&defaultInfo);
 }
