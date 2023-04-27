@@ -10,7 +10,7 @@
 #include "file_handler.h"
 #include "algo.h"
 
-#define MAX_PATHS 3
+#define MAX_PATHS 2
 #define MAX_GAMES 10000
 
 // Global variables used for memoization
@@ -187,7 +187,7 @@ static inline bool gameOverNextMove(NextMoves* nextMoviments) {
 
 static inline float calculateScore(float distToFinish, int validNextMoves, Piece* playerPiece) {
 
-	float score = (distToFinish / 10) - (validNextMoves / 10);
+	float score = (distToFinish / 10) - (validNextMoves / 7);
 
 	/*switch(playerPiece -> type) {
 
@@ -560,7 +560,7 @@ void autoPlay(Board* currentBoard, int depth) {
 		} else{
 			printf("The Algorithm Couldn't Finish The Game! :(\n");
 			pathNode = getPathFromTable(currentInfo -> moviments, distanceToFinish(currentInfo -> currentBoard));
-			pathNode -> score += 1;
+			pathNode -> score += 10;
 		}
 		
 		freeInfo(&currentInfo);
