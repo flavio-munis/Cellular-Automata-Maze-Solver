@@ -15,3 +15,6 @@ results/*
 
 # Core Dump Files
 core.*
+
+# New Features / Changes to Made
+whats_next.txt

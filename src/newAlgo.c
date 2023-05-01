@@ -8,7 +8,7 @@
 #include "moviments.h"
 #include "error_handler.h"
 #include "file_handler.h"
-#include "algo.h"
+#include "newAlgo.h"
 
 #define MAX_PATHS 2
 #define MAX_GAMES 10000
@@ -47,7 +47,7 @@ void initPathsTable(Board* currentBoard) {
 
 	float maxDist = distanceToFinish(currentBoard);
 
-	pathsMemo = calloc(ceil(maxDist) + 1, sizeof(PathsTable*));
+	pathsMemo = (PathsTable**) calloc(ceil(maxDist) + 1, sizeof(PathsTable*));
 	checkNullPointer((void*) pathsMemo);
 }
 
@@ -113,43 +113,6 @@ PathsTable* getPathFromTable(MovimentVec* moves, float playerDist) {
 	}
 
 	return NULL;
-}
-
-// Creates a new instance of the Info type
-Info* createInfo(Board* currentBoard, MovimentVec* moviments) {
-
-	Info* newInfo = (Info*) malloc(sizeof(Info));
-
-	checkNullPointer((void*) newInfo);
-
-	newInfo -> currentBoard = currentBoard;
-	newInfo -> moviments = moviments;
-
-	return newInfo;
-}
-
-// Creates a copy from the current struct and returns it's pointer
-Info* copyInfo(Info* currentInfo) {
-
-	Info* newInfo;
-	Board* newBoard = copyBoard(currentInfo -> currentBoard);
-	MovimentVec* newMovimentVec = copyMovimentVec(currentInfo -> moviments);
-		
-	checkNullPointer((void*) newBoard);
-	checkNullPointer((void*) newMovimentVec);
-
-	newInfo = createInfo(newBoard, newMovimentVec);
-	return newInfo;
-}
-
-// Frees all memory allocated to info struct
-void freeInfo(Info** currentInfo) {
-	
-	freeBoard((*currentInfo) -> currentBoard);
-	freeMovimentVec((*currentInfo) -> moviments);
-	free(*currentInfo);
-	
-	*currentInfo = NULL;
 }
 
 // Initiate the distance table used for memoization
@@ -233,6 +196,7 @@ int countNextMoves(NextMoves* nextMoviments) {
 	return count;	
 }
 
+/*
 // Updates the board and adds the moviment made to the moviment vector
 void auxDiscoverOptimalPath(Info* currentInfo, enum MovimentStates currentMove) {
 
@@ -241,75 +205,9 @@ void auxDiscoverOptimalPath(Info* currentInfo, enum MovimentStates currentMove) 
 	addToMovimentVec(currentInfo -> moviments, currentMove);
 	updateBoard(currentInfo -> currentBoard, playerCoordinates[0], playerCoordinates[1]);
 	free(playerCoordinates);
-}
+	}*/
 
-// Free all paths nodes list
-void freePaths(Paths** head) {
-
-	Paths* nextNode, *aux = *head;
-	
-	while(aux) {
-		nextNode = aux -> next;
-		if(aux -> currentInfo)
-			freeInfo(&aux -> currentInfo);
-		free(aux);
-		aux = nextNode;
-	}
-	
-	*head = NULL;
-}
-
-// Prints all Paths in the list
-void printPaths(Paths* head) {
-
-	Paths* aux = head;
-
-	while(aux) {
-		printBoard(aux -> currentInfo ->  currentBoard);
-		printf("Moviments: ");
-		printMoviments(aux -> currentInfo -> moviments);
-		puts("");
-		printf("Score: %f", aux -> score);
-		puts("\n");
-
-		aux = aux -> next;
-	}	
-}
-
-// Creates a new path node
-Paths* createPath(Info* currentInfo, NextMoves* nextMoviments) {
-
-	Paths* newPath = (Paths*) malloc(sizeof(Paths));
-
-	checkNullPointer((void*) nextMoviments);
-	checkNullPointer((void*) newPath);
-
-	int playerPositionX = currentInfo -> currentBoard -> player.coordinate[0];
-	int playerPositionY = currentInfo -> currentBoard -> player.coordinate[1];
-	Piece* playerPiece = &currentInfo -> currentBoard -> pieces[playerPositionY][playerPositionX];
-	
-	newPath -> currentInfo = currentInfo;
-	newPath -> distToFinish = distanceToFinish(currentInfo -> currentBoard);
-	newPath -> score = calculateScore(newPath -> distToFinish, countNextMoves(nextMoviments), playerPiece);
-	newPath -> totalElements = 0;
-	newPath -> next = NULL;
-	
-	return newPath;
-}
-
-int countElements(Paths** head) {
-
-	Paths* aux = *head;
-	int result = 0;
-	
-	while(aux) {
-		aux = aux -> next;
-		result++;
-	}
-
-	return result;
-}
-
+/*
 void addPath2(Paths** head, Info* currentInfo) {
 
 	NextMoves* nextMoviments = getNextMoviments(currentInfo -> currentBoard);
@@ -384,8 +282,9 @@ void addPath2(Paths** head, Info* currentInfo) {
 	}
 		
 	free(nextMoviments);
-}
-	
+} */
+
+/*
 // First call to search for paths, discovers all possibles paths recursivily and adds it to the list
 void firstSearch(Paths** newPaths, Info* currentInfo, int depth) {
 
@@ -451,7 +350,9 @@ void firstSearch(Paths** newPaths, Info* currentInfo, int depth) {
         free(nextUpdate);
     }
 }
+*/
 
+/*
 // Continue searching for an win path but now with the result of the previous searchs
 void continuosSearch(Paths** prevResults, Paths** newPaths, int depth) {
 
@@ -464,19 +365,9 @@ void continuosSearch(Paths** prevResults, Paths** newPaths, int depth) {
 		auxPrevResults = auxPrevResults -> next;
 	}
 }
+*/
 
-// Deep copies a list to another
-void copyPaths(Paths** src, Paths** target) {
-
-	Paths* auxSrc = *src;
-	
-	while(auxSrc) {
-		
-		addPath2(target, copyInfo(auxSrc -> currentInfo));
-		auxSrc = auxSrc -> next;
-	}
-}
-
+/*
 Info* findPaths(Info* defaultInfo, int depth) {
 
 	Paths* head = NULL;
@@ -524,6 +415,7 @@ Info* findPaths(Info* defaultInfo, int depth) {
 
 	return currentInfo;
 }
+*/
 
 // Autoplay through the entire maze and writes the winning path to a file
 void autoPlay(Board* currentBoard, int depth) {

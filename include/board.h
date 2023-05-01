@@ -12,12 +12,11 @@ typedef struct board {
 	int8_t sizeCol;
 	int8_t sizeRow;
 	Piece** pieces;
-	Player player;
 } Board;
 
 void debugBoard(Board*);
-Board* createCustomBoard(char*,int,int);
-void updateBoard(Board*, int, int);
+Board* createCustomBoard(char*);
+void updateBoard(Board*);
 bool gameOver(Board*);
 bool playerHasWon(Board*);
 int checkNeighbours(Board*, int, int);

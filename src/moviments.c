@@ -6,6 +6,11 @@
 #include "error_handler.h"
 #include "moviments.h"
 
+// Declares all functions used internally
+void printNextMovementsAux(enum MovimentStates);
+void reallocMovimentVec(MovimentVec*);
+enum MovimentStates getNextMovimentsAux(enum PieceState, int);
+
 // Checks if it's a valid move
 bool isValidMove(Board* currentBoard, char direction) {
 
@@ -85,6 +90,51 @@ int* playerNewPosition(Board* currentBoard, enum MovimentType direction) {
 
 	return newPosition;
 	
+}
+
+// Auxiliar Function to printNextMovement
+void printNextMovementsAux(enum MovimentStates movement) {
+	switch(movement) {
+	    case IMPOSSIBLE:
+			printf("Impossible\n");
+			break;
+
+		case OKAY:
+			printf("Okay\n");
+			break;
+
+		case GAME_OVER:
+			printf("Game Over\n");
+			break;
+
+		case GAME_WON:
+			printf("Game Won\n");
+			break;
+
+		case START_PIECE:
+			printf("Start Piece\n");
+			break;
+	}
+}
+
+// Prints all possibles next moves and it's results
+void printNextMoviments(Board* currentBoard) {
+
+	NextMoves* moviments = getNextMoviments(currentBoard);
+	
+	printf("Up: ");
+	printNextMovementsAux(moviments -> up);
+
+	printf("Down: ");
+	printNextMovementsAux(moviments -> down);
+
+	printf("Left: ");
+	printNextMovementsAux(moviments -> left);
+
+	printf("Right: ");
+	printNextMovementsAux(moviments -> right);
+
+	free(moviments);
 }
 
 // Creates a new moviment vector

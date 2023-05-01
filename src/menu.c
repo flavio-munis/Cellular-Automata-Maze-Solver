@@ -17,51 +17,6 @@ void flushStdin() {
 	while ((c = getchar()) != '\n' && c != EOF);
 }
 
-// Auxiliar Function to printNextMovement
-void printNextMovementsAux(enum MovimentStates movement) {
-	switch(movement) {
-	    case IMPOSSIBLE:
-			printf("Impossible\n");
-			break;
-
-		case OKAY:
-			printf("Okay\n");
-			break;
-
-		case GAME_OVER:
-			printf("Game Over\n");
-			break;
-
-		case GAME_WON:
-			printf("Game Won\n");
-			break;
-
-		case START_PIECE:
-			printf("Start Piece\n");
-			break;
-	}
-}
-
-// Prints all possibles next moves and it's results
-void printNextMoviments(Board* currentBoard) {
-
-	NextMoves* moviments = getNextMoviments(currentBoard);
-	
-	printf("Up: ");
-	printNextMovementsAux(moviments -> up);
-
-	printf("Down: ");
-	printNextMovementsAux(moviments -> down);
-
-	printf("Left: ");
-	printNextMovementsAux(moviments -> left);
-
-	printf("Right: ");
-	printNextMovementsAux(moviments -> right);
-
-	free(moviments);
-}
-
 // Prints the current board to the screen
 void printBoard(Board* currentBoard) {
 

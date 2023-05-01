@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include "menu.h"
 #include "moviments.h"
-#include "algo.h"
+#include "newAlgo.h"
 #include "board.h"
 #include "error_handler.h"
 #include "file_handler.h"
